@@ -133,14 +133,26 @@ public:
             {
                 io_context_list_[i]->tt_context_ = std::thread([this, i]()
                     {
-                        io_context_list_[i]->io_context_->run();
-                        io_context_list_[i]->thread_is_run_ = true;
+                        try
+                        {
+                            std::cout << "[CClient_Manager::run](" << i << ") is run." << std::endl;
+                            io_context_list_[i]->thread_is_run_ = true;
+                            io_context_list_[i]->io_context_->run();
+                            std::cout << "[CClient_Manager::run](" << i << ") is over." << std::endl;
+                        }
+                        catch (asio::error_code ec)
+                        {
+                            std::cout << "[CClient_Manager::run](" << i << ") is error=" << ec.message() << std::endl;
+                        }
+
+                        
+
                     });
             }
         }
 
         //挂起一会，等子线程启动完毕。
-        this_thread::sleep_for(chrono::microseconds(5));
+        this_thread::sleep_for(chrono::milliseconds(5));
     }
 
 private:

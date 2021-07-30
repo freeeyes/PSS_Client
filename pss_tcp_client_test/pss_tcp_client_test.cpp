@@ -1,6 +1,8 @@
 ﻿#include <iostream>
 #include "framework.h"
 #include <windows.h>
+#include <chrono>
+#include <thread>
 
 //测试PSS TCP Client 客户端
 //add by freeeyes
@@ -26,6 +28,27 @@ void Test_Tcp_Connect()
 
     start_client(1, client_ip, 10002);
 
+    //测试发送数据
+    char send_buffer[240] = { '\0' };
+    int nPos = 0;
+
+    unsigned short client_version = 1;
+    unsigned short client_command_id = 0x2101;
+    unsigned int client_packet_length = 200;
+
+    std::memcpy(&send_buffer[nPos], &client_version, sizeof(short));
+    nPos += sizeof(short);
+    std::memcpy(&send_buffer[nPos], &client_command_id, sizeof(short));
+    nPos += sizeof(short);
+    std::memcpy(&send_buffer[nPos], &client_packet_length, sizeof(int));
+    nPos += sizeof(int);
+    nPos += 32;
+    nPos += 200;
+
+    std::string str_send_buffer;
+    str_send_buffer.append(send_buffer, 240);
+    client_send_data(1, str_send_buffer, 240);
+    this_thread::sleep_for(chrono::milliseconds(10));
     close_client(1);
 }
 
@@ -43,7 +66,7 @@ BOOL WINAPI CtrlHandler(DWORD fdwCtrlType)
 
 int main()
 {
-    load_module(4);
+    load_module();
 
     SetConsoleCtrlHandler(CtrlHandler, TRUE);
 
