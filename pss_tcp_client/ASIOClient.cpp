@@ -48,7 +48,7 @@ void CASIOClient::do_read()
             else
             {
                 //Á´½Ó¶Ï¿ª
-                std::cout << "[CASIOClient::do_read]error=" << ec.message() << std::endl;
+                //std::cout << "[CASIOClient::do_read]error=" << ec.message() << std::endl;
                 dis_connect_ptr_(connect_id_, ec.message());
                 close_socket();
             }
@@ -80,5 +80,4 @@ void CASIOClient::do_write_immediately(const char* data, size_t length)
 void CASIOClient::close_socket()
 {
     socket_.close();
-    dis_connect_ptr_(connect_id_, "client close");
 }

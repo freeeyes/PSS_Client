@@ -133,11 +133,16 @@ public:
             {
                 io_context_list_[i]->tt_context_ = std::thread([this, i]()
                     {
+                        asio::executor_work_guard<asio::io_context::executor_type> work_guard_ 
+                            = asio::make_work_guard(*io_context_list_[i]->io_context_);
                         try
                         {
                             std::cout << "[CClient_Manager::run](" << i << ") is run." << std::endl;
                             io_context_list_[i]->thread_is_run_ = true;
-                            io_context_list_[i]->io_context_->run();
+                            while (true)
+                            {
+                                io_context_list_[i]->io_context_->run();
+                            }
                             std::cout << "[CClient_Manager::run](" << i << ") is over." << std::endl;
                         }
                         catch (asio::error_code ec)
