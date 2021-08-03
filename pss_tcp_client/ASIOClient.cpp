@@ -24,6 +24,8 @@ bool CASIOClient::start(int connect_id, const std::string& server_ip, short serv
         //链接建立成功, 开始接收数据
         connect_ptr_(connect_id_);
 
+        is_connect_ = true;
+
         do_read();
 
         return true;
@@ -81,3 +83,24 @@ void CASIOClient::close_socket()
 {
     socket_.close();
 }
+
+bool CASIOClient::get_connect_state()
+{
+    return is_connect_;
+}
+
+client_connect_ptr CASIOClient::get_client_connect_ptr()
+{
+    return connect_ptr_;
+}
+
+client_dis_connect_ptr CASIOClient::get_client_dis_connect_ptr()
+{
+    return dis_connect_ptr_;
+}
+
+client_recv_ptr CASIOClient::get_client_recv_ptr()
+{
+    return recv_ptr_;
+}
+

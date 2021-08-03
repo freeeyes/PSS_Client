@@ -24,9 +24,9 @@ void client_recv(int connect_id, const char* buffer, int recv_length)
 void Test_Tcp_Connect()
 {
     std::string client_ip = "127.0.0.1";
-    create_new_client(1, client_connect, client_dis_connect, client_recv);
+    int client_id = create_new_client(client_connect, client_dis_connect, client_recv);
 
-    start_client(1, client_ip, 10002);
+    start_client(client_id, client_ip, 10002);
 
     //测试发送数据
     char send_buffer[240] = { '\0' };
@@ -47,9 +47,9 @@ void Test_Tcp_Connect()
 
     std::string str_send_buffer;
     str_send_buffer.append(send_buffer, 240);
-    client_send_data(1, str_send_buffer, 240);
+    client_send_data(client_id, str_send_buffer, 240);
     this_thread::sleep_for(chrono::milliseconds(10));
-    close_client(1);
+    close_client(client_id);
 }
 
 BOOL WINAPI CtrlHandler(DWORD fdwCtrlType)

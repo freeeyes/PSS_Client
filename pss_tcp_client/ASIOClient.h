@@ -24,11 +24,19 @@ public:
 
     void close_socket();
 
+    bool get_connect_state();
+
+    client_connect_ptr get_client_connect_ptr();
+
+    client_dis_connect_ptr get_client_dis_connect_ptr();
+
+    client_recv_ptr get_client_recv_ptr();
 
 private:
     tcp::socket socket_;
     char recv_buffer[recv_buffer_max_size_];
     int connect_id_ = 0;
+    bool is_connect_ = false;
     client_connect_ptr connect_ptr_ = nullptr;
     client_dis_connect_ptr dis_connect_ptr_ = nullptr;
     client_recv_ptr recv_ptr_ = nullptr;

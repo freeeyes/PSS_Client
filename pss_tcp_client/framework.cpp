@@ -12,9 +12,9 @@ void unload_module()
     App_Client_Manager::instance()->close();
 }
 
-bool create_new_client(int client_id, client_connect_ptr connect_ptr, client_dis_connect_ptr dis_connect_ptr, client_recv_ptr recv_ptr)
+int create_new_client(client_connect_ptr connect_ptr, client_dis_connect_ptr dis_connect_ptr, client_recv_ptr recv_ptr)
 {
-    return App_Client_Manager::instance()->create_new_client(client_id, connect_ptr, dis_connect_ptr, recv_ptr);
+    return App_Client_Manager::instance()->create_new_client(connect_ptr, dis_connect_ptr, recv_ptr);
 }
 
 bool start_client(int client_id, const std::string& server_ip, short server_port)
