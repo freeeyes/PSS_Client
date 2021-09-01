@@ -11,25 +11,15 @@ bool CASIOClient::start(int connect_id, const std::string& server_ip, short serv
     tcp::endpoint end_point(asio::ip::address::from_string(server_ip.c_str()), server_port);
     asio::error_code connect_error;
 
-    socket_.connect(end_point, connect_error);
-    if (connect_error)
-    {
-        //连接建立失败
-        std::cout << "[CASIOClient::start]error=" << connect_error.message() << std::endl;
-        dis_connect_ptr_(connect_id_, connect_error.message());
-        return false;
-    }
-    else
-    {
-        //链接建立成功, 开始接收数据
-        connect_ptr_(connect_id_);
+    auto handler = std::bind(
+        &CASIOClient::connect_handler,
+        this,
+        std::placeholders::_1);
 
-        is_connect_ = true;
+    //异步链接
+    socket_.async_connect(end_point, handler);
 
-        do_read();
-
-        return true;
-    }
+    return true;
 }
 
 void CASIOClient::do_read()
@@ -87,6 +77,25 @@ void CASIOClient::close_socket()
 bool CASIOClient::get_connect_state()
 {
     return is_connect_;
+}
+
+void CASIOClient::connect_handler(const asio::error_code& ec)
+{
+    if (!ec)
+    {
+        is_connect_ = true;
+
+        connect_ptr_(connect_id_);
+        
+        do_read();
+
+    }
+    else
+    {
+        is_connect_ = false;
+        std::cout << "[CASIOClient::start]error=" << ec.message() << std::endl;
+        dis_connect_ptr_(connect_id_, ec.message());
+    }
 }
 
 client_connect_ptr CASIOClient::get_client_connect_ptr()

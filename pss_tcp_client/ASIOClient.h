@@ -8,6 +8,8 @@
 #include "pss_common.h"
 
 using asio::ip::tcp;
+using std::placeholders::_1;
+
 
 const int recv_buffer_max_size_ = 10240;
 
@@ -25,6 +27,8 @@ public:
     void close_socket();
 
     bool get_connect_state();
+
+    void connect_handler(const asio::error_code& ec);
 
     client_connect_ptr get_client_connect_ptr();
 
