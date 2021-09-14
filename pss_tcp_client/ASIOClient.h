@@ -4,9 +4,12 @@
 #include <cstring>
 #include <functional>
 #include <iostream>
+#include <chrono>
 #include <asio.hpp>
 #include "pss_common.h"
 
+
+using namespace std::chrono;
 using asio::ip::tcp;
 using std::placeholders::_1;
 
@@ -16,7 +19,7 @@ const int recv_buffer_max_size_ = 10240;
 class CASIOClient : public std::enable_shared_from_this<CASIOClient>
 {
 public:
-    explicit CASIOClient(asio::io_context* io_context, client_connect_ptr connect_ptr, client_dis_connect_ptr dis_connect_ptr, client_recv_ptr recv_ptr);
+    explicit CASIOClient(asio::io_context* io_context, client_connect_ptr connect_ptr, client_dis_connect_ptr dis_connect_ptr, client_recv_ptr recv_ptr, time_check_ptr time_check);
 
     bool start(int connect_id, const std::string& server_ip, short server_port);
 
@@ -30,19 +33,30 @@ public:
 
     void connect_handler(const asio::error_code& ec);
 
+    void set_write_time();
+
+    int get_time_pass_seconds();
+
+    void do_check_timeout(int seconds);
+
     client_connect_ptr get_client_connect_ptr();
 
     client_dis_connect_ptr get_client_dis_connect_ptr();
 
     client_recv_ptr get_client_recv_ptr();
 
+    time_check_ptr get_time_check_ptr();
+
 private:
     tcp::socket socket_;
+    system_clock::time_point recv_last_timer_ = system_clock::now();
+    system_clock::time_point write_last_timer_ = system_clock::now();
     char recv_buffer[recv_buffer_max_size_];
     int connect_id_ = 0;
     bool is_connect_ = false;
     client_connect_ptr connect_ptr_ = nullptr;
     client_dis_connect_ptr dis_connect_ptr_ = nullptr;
     client_recv_ptr recv_ptr_ = nullptr;
+    time_check_ptr time_ptr_ = nullptr;
 };
 

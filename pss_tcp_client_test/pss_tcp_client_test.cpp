@@ -21,10 +21,15 @@ void client_recv(int connect_id, const char* buffer, int recv_length)
     std::cout << "[client_recv](" << connect_id << ")recv_length=" << recv_length << std::endl;
 }
 
+void time_check(int connect_id, int time_pass_seconds)
+{
+    std::cout << "[time_check](" << connect_id << ")time_pass_seconds=" << time_pass_seconds << std::endl;
+}
+
 void Test_Tcp_Connect()
 {
     std::string client_ip = "127.0.0.1";
-    int client_id = create_new_client(client_connect, client_dis_connect, client_recv);
+    int client_id = create_new_client(client_connect, client_dis_connect, client_recv, time_check);
 
     start_client(client_id, client_ip, 10002);
 
@@ -49,7 +54,8 @@ void Test_Tcp_Connect()
     str_send_buffer.append(send_buffer, 240);
     client_send_data(client_id, str_send_buffer, 240);
     this_thread::sleep_for(chrono::milliseconds(10));
-    close_client(client_id);
+    //close_client(client_id);
+
 }
 
 BOOL WINAPI CtrlHandler(DWORD fdwCtrlType)
@@ -66,7 +72,7 @@ BOOL WINAPI CtrlHandler(DWORD fdwCtrlType)
 
 int main()
 {
-    load_module();
+    load_module(1, 5);
 
     SetConsoleCtrlHandler(CtrlHandler, TRUE);
 

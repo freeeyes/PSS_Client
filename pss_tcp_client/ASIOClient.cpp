@@ -1,6 +1,7 @@
 #include "ASIOClient.h"
 
-CASIOClient::CASIOClient(asio::io_context* io_context, client_connect_ptr connect_ptr, client_dis_connect_ptr dis_connect_ptr, client_recv_ptr recv_ptr) : socket_(*io_context), connect_ptr_(connect_ptr), dis_connect_ptr_(dis_connect_ptr), recv_ptr_(recv_ptr)
+CASIOClient::CASIOClient(asio::io_context* io_context, client_connect_ptr connect_ptr, client_dis_connect_ptr dis_connect_ptr, client_recv_ptr recv_ptr, time_check_ptr time_check) 
+    : socket_(*io_context), connect_ptr_(connect_ptr), dis_connect_ptr_(dis_connect_ptr), recv_ptr_(recv_ptr), time_ptr_(time_check)
 {
 }
 
@@ -34,6 +35,7 @@ void CASIOClient::do_read()
                 //处理数据
                 recv_ptr_(connect_id_, recv_buffer, (int)length);
 
+                recv_last_timer_ = system_clock::now();
                 //继续读
                 do_read();
             }
@@ -65,6 +67,7 @@ void CASIOClient::do_write_immediately(const char* data, size_t length)
                 self->close_socket();
             }
 
+            self->set_write_time();
             delete[] send_buffer;
         });
 }
@@ -98,6 +101,30 @@ void CASIOClient::connect_handler(const asio::error_code& ec)
     }
 }
 
+void CASIOClient::set_write_time()
+{
+    write_last_timer_ = system_clock::now();
+}
+
+int CASIOClient::get_time_pass_seconds()
+{
+    auto recv_pass = std::chrono::duration_cast<std::chrono::seconds>(system_clock::now() - recv_last_timer_);
+    auto write_pass = std::chrono::duration_cast<std::chrono::seconds>(system_clock::now() - recv_last_timer_);
+    if (write_pass > recv_pass)
+    {
+        return (int)write_pass.count();
+    }
+    else
+    {
+        return (int)recv_pass.count();
+    }
+}
+
+void CASIOClient::do_check_timeout(int seconds)
+{
+    time_ptr_(connect_id_, seconds);
+}
+
 client_connect_ptr CASIOClient::get_client_connect_ptr()
 {
     return connect_ptr_;
@@ -111,5 +138,10 @@ client_dis_connect_ptr CASIOClient::get_client_dis_connect_ptr()
 client_recv_ptr CASIOClient::get_client_recv_ptr()
 {
     return recv_ptr_;
+}
+
+time_check_ptr CASIOClient::get_time_check_ptr()
+{
+    return time_ptr_;
 }
 

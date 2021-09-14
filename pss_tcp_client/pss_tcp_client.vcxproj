@@ -156,6 +156,7 @@
     <ClInclude Include="ASIOClient.h" />
     <ClInclude Include="client_manager.h" />
     <ClInclude Include="framework.h" />
+    <ClInclude Include="io_timer.h" />
     <ClInclude Include="pss_common.h" />
     <ClInclude Include="singleton.h" />
   </ItemGroup>

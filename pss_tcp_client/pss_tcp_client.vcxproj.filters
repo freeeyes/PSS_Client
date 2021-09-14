@@ -30,6 +30,9 @@
     <ClInclude Include="client_manager.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="io_timer.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">

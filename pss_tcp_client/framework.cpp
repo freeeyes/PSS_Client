@@ -1,9 +1,11 @@
 #include "client_manager.h"
 #include "framework.h"
 
-int load_module(int thread_count)
+//默认定时器的检测间隔
+
+int load_module(int thread_count, int timer_check_seconds)
 {
-    App_Client_Manager::instance()->run(thread_count);
+    App_Client_Manager::instance()->run(thread_count, timer_check_seconds);
     return 0;
 }
 
@@ -12,9 +14,9 @@ void unload_module()
     App_Client_Manager::instance()->close();
 }
 
-int create_new_client(client_connect_ptr connect_ptr, client_dis_connect_ptr dis_connect_ptr, client_recv_ptr recv_ptr)
+int create_new_client(client_connect_ptr connect_ptr, client_dis_connect_ptr dis_connect_ptr, client_recv_ptr recv_ptr, time_check_ptr time_check)
 {
-    return App_Client_Manager::instance()->create_new_client(connect_ptr, dis_connect_ptr, recv_ptr);
+    return App_Client_Manager::instance()->create_new_client(connect_ptr, dis_connect_ptr, recv_ptr, time_check);
 }
 
 bool start_client(int client_id, const std::string& server_ip, short server_port)

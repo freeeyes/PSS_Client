@@ -5,6 +5,7 @@
 
 using namespace std;
 
+using time_check_ptr = void(*)(int, int);
 using client_connect_ptr = void(*)(int);
 using client_dis_connect_ptr = void(*)(int, std::string ec);
 using client_recv_ptr = void(*)(int, const char* buffer, int recv_length);
