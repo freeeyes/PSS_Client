@@ -21,6 +21,9 @@
     <ClCompile Include="packet_format.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="packet_dispose.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\framework.h">
@@ -30,6 +33,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="packet_format.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="packet_dispose.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

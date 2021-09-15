@@ -143,12 +143,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="packet_dispose.cpp" />
     <ClCompile Include="packet_format.cpp" />
     <ClCompile Include="pss_tcp_client_test.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\framework.h" />
     <ClInclude Include="Include\pss_common.h" />
+    <ClInclude Include="packet_dispose.h" />
     <ClInclude Include="packet_format.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

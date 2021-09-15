@@ -1,7 +1,7 @@
 #include "ASIOClient.h"
 
-CASIOClient::CASIOClient(asio::io_context* io_context, client_connect_ptr connect_ptr, client_dis_connect_ptr dis_connect_ptr, client_recv_ptr recv_ptr, time_check_ptr time_check) 
-    : socket_(*io_context), connect_ptr_(connect_ptr), dis_connect_ptr_(dis_connect_ptr), recv_ptr_(recv_ptr), time_ptr_(time_check)
+CASIOClient::CASIOClient(asio::io_context* io_context, std::shared_ptr<ipacket_format> packet_format, std::shared_ptr<ipacket_dispose> packet_dispose)
+    : socket_(*io_context), packet_format_(packet_format), packet_dispose_(packet_dispose)
 {
 }
 
@@ -33,8 +33,13 @@ void CASIOClient::do_read()
         {
             if (!ec)
             {
-                //处理数据
-                recv_ptr_(connect_id_, recv_buffer, (int)length);
+                //处理数据(发送消息)
+                auto recv_packet_list_info = packet_format_->format_recv_buffer(connect_id_, recv_buffer, length);
+
+                for(auto recv_packet : recv_packet_list_info)
+                {
+                    packet_dispose_->do_message(connect_id_, recv_packet);
+                }
 
                 recv_last_timer_ = system_clock::now();
                 //继续读
@@ -44,7 +49,9 @@ void CASIOClient::do_read()
             {
                 //链接断开
                 //std::cout << "[CASIOClient::do_read]error=" << ec.message() << std::endl;
-                dis_connect_ptr_(connect_id_, ec.message());
+                crecv_packet recv_packet;
+                recv_packet.command_id_ = disconnect_command_id;
+                packet_dispose_->do_message(connect_id_, recv_packet);
                 close_socket();
             }
         });
@@ -64,7 +71,9 @@ void CASIOClient::do_write_immediately(const char* data, size_t length)
             if (ec)
             {
                 //发送失败
-                self->dis_connect_ptr_(connect_id, ec.message());
+                crecv_packet recv_packet;
+                recv_packet.command_id_ = disconnect_command_id;
+                self->packet_dispose_->do_message(connect_id, recv_packet);
                 self->close_socket();
             }
 
@@ -89,7 +98,9 @@ void CASIOClient::connect_handler(const asio::error_code& ec)
     {
         is_connect_ = true;
 
-        connect_ptr_(connect_id_);
+        crecv_packet recv_packet;
+        recv_packet.command_id_ = connect_command_id;
+        packet_dispose_->do_message(connect_id_, recv_packet);
         
         do_read();
 
@@ -98,7 +109,9 @@ void CASIOClient::connect_handler(const asio::error_code& ec)
     {
         is_connect_ = false;
         std::cout << "[CASIOClient::start]error=" << ec.message() << std::endl;
-        dis_connect_ptr_(connect_id_, ec.message());
+        crecv_packet recv_packet;
+        recv_packet.command_id_ = disconnect_command_id;
+        packet_dispose_->do_message(connect_id_, recv_packet);
     }
 }
 
@@ -123,26 +136,9 @@ int CASIOClient::get_time_pass_seconds()
 
 void CASIOClient::do_check_timeout(int seconds)
 {
-    time_ptr_(connect_id_, seconds);
-}
-
-client_connect_ptr CASIOClient::get_client_connect_ptr()
-{
-    return connect_ptr_;
-}
-
-client_dis_connect_ptr CASIOClient::get_client_dis_connect_ptr()
-{
-    return dis_connect_ptr_;
-}
-
-client_recv_ptr CASIOClient::get_client_recv_ptr()
-{
-    return recv_ptr_;
-}
-
-time_check_ptr CASIOClient::get_time_check_ptr()
-{
-    return time_ptr_;
+    crecv_packet recv_packet;
+    recv_packet.command_id_ = time_check_command_id;
+    recv_packet.packet_body_ = std::to_string(seconds);
+    packet_dispose_->do_message(connect_id_, recv_packet);
 }
 

@@ -3,15 +3,36 @@
 #include <map>
 #include <string>
 #include <functional>
+#include <vector>
 
 using namespace std;
 
-using time_check_ptr = void(*)(int, int);
-using client_connect_ptr = void(*)(int);
-using client_dis_connect_ptr = void(*)(int, std::string ec);
-using client_recv_ptr = void(*)(int, const char* buffer, int recv_length);
-
 using task_function = std::function<void()>;
+
+class crecv_packet
+{
+public:
+    short command_id_ = 0;
+    std::string packet_body_;
+    size_t packet_size_ = 0;
+};
+
+using recv_packet_list = std::vector<crecv_packet>;
+
+//数据解析组包类(需要上层逻辑提供实现类)
+class ipacket_format
+{
+public:
+    virtual recv_packet_list format_recv_buffer(int connect_id, const char* recv_buffer, size_t buffer_length) = 0;
+    virtual std::string format_send_buffer(int connect_id, short command_id, std::string recv_buffer, size_t buffer_length) = 0;
+};
+
+//数据处理类(需要上层逻辑提供实现类)
+class ipacket_dispose
+{
+public:
+    virtual bool do_message(int connect_id, crecv_packet recv_packet) = 0;
+};
 
 //基础类型定义
 using uint8 = uint8_t;

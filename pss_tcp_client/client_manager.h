@@ -44,28 +44,7 @@ public:
         std::cout << "[CClient_Manager::timer_check]end" << std::endl;
     }
 
-    int create_new_client(int client_id, client_connect_ptr connect_ptr, client_dis_connect_ptr dis_connect_ptr, client_recv_ptr recv_ptr, time_check_ptr time_ptr)
-    {
-        auto io_context_index = client_id % io_context_list_count_;
-        auto io_context_ = io_context_list_[io_context_index]->io_context_;
-
-        auto f = asio_client_list_.find(client_id);
-        if (f != asio_client_list_.end())
-        {
-            return -1;
-        }
-        else
-        {
-            asio_client_list_[client_id] = std::make_shared<CASIOClient>(io_context_,
-                connect_ptr,
-                dis_connect_ptr,
-                recv_ptr,
-                time_ptr);
-            return client_id;
-        }
-    }
-
-    int create_new_client(client_connect_ptr connect_ptr, client_dis_connect_ptr dis_connect_ptr, client_recv_ptr recv_ptr, time_check_ptr time_ptr)
+    int create_new_client(std::shared_ptr<ipacket_format> packet_format, std::shared_ptr<ipacket_dispose> packet_dispose)
     {
         //获得新的ID
         int client_id = curr_client_id_;
@@ -79,10 +58,8 @@ public:
         else
         {
             asio_client_list_[client_id] = std::make_shared<CASIOClient>(&io_context_,
-                connect_ptr,
-                dis_connect_ptr,
-                recv_ptr,
-                time_ptr);
+                packet_format,
+                packet_dispose);
             return client_id;
         }
     }
@@ -92,21 +69,7 @@ public:
         auto f = asio_client_list_.find(client_id);
         if (f != asio_client_list_.end())
         {
-            if(f->second->get_connect_state() == true)
-            {
-                //如果找到了，则自动重连
-                client_connect_ptr _client_connect_ptr = f->second->get_client_connect_ptr();
-                client_dis_connect_ptr _client_dis_connect_ptr = f->second->get_client_dis_connect_ptr();
-                client_recv_ptr _client_recv_ptr = f->second->get_client_recv_ptr();
-                time_check_ptr _client_time_ptr = f->second->get_time_check_ptr();
-
-                create_new_client(client_id, _client_connect_ptr, _client_dis_connect_ptr, _client_recv_ptr, _client_time_ptr);
-                return f->second->start(client_id, server_ip, server_port);
-            }
-            else
-            {
-                return f->second->start(client_id, server_ip, server_port);
-            }
+            return f->second->start(client_id, server_ip, server_port);
         }
         else
         {

@@ -14,9 +14,9 @@ void unload_module()
     App_Client_Manager::instance()->close();
 }
 
-int create_new_client(client_connect_ptr connect_ptr, client_dis_connect_ptr dis_connect_ptr, client_recv_ptr recv_ptr, time_check_ptr time_check)
+int create_new_client(std::shared_ptr<ipacket_format> packet_format, std::shared_ptr<ipacket_dispose> packet_dispose)
 {
-    return App_Client_Manager::instance()->create_new_client(connect_ptr, dis_connect_ptr, recv_ptr, time_check);
+    return App_Client_Manager::instance()->create_new_client(packet_format, packet_dispose);
 }
 
 bool start_client(int client_id, const std::string& server_ip, short server_port)

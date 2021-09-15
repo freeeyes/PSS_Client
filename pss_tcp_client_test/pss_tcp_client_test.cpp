@@ -4,6 +4,7 @@
 #include <thread>
 #include "framework.h"
 #include "packet_format.h"
+#include "packet_dispose.h"
 
 //测试PSS TCP Client 客户端
 //add by freeeyes
@@ -33,7 +34,10 @@ void time_check(int connect_id, int time_pass_seconds)
 void Test_Tcp_Connect()
 {
     std::string client_ip = "127.0.0.1";
-    int client_id = create_new_client(client_connect, client_dis_connect, client_recv, time_check);
+    auto packet_format = std::make_shared<cpacket_format>();
+    auto packet_dispose = std::make_shared<cpacket_dispose>();
+
+    int client_id = create_new_client(packet_format, packet_dispose);
 
     start_client(client_id, client_ip, 10002);
 

@@ -13,13 +13,17 @@ using namespace std::chrono;
 using asio::ip::tcp;
 using std::placeholders::_1;
 
+//Ä¬ÈÏµÄÃüÁîid
+const short connect_command_id = 0x0001;
+const short disconnect_command_id = 0x0002;
+const short time_check_command_id = 0x0003;
 
 const int recv_buffer_max_size_ = 10240;
 
 class CASIOClient : public std::enable_shared_from_this<CASIOClient>
 {
 public:
-    explicit CASIOClient(asio::io_context* io_context, client_connect_ptr connect_ptr, client_dis_connect_ptr dis_connect_ptr, client_recv_ptr recv_ptr, time_check_ptr time_check);
+    explicit CASIOClient(asio::io_context* io_context, std::shared_ptr<ipacket_format> packet_format, std::shared_ptr<ipacket_dispose> packet_dispose);
 
     bool start(int connect_id, const std::string& server_ip, short server_port);
 
@@ -39,14 +43,6 @@ public:
 
     void do_check_timeout(int seconds);
 
-    client_connect_ptr get_client_connect_ptr();
-
-    client_dis_connect_ptr get_client_dis_connect_ptr();
-
-    client_recv_ptr get_client_recv_ptr();
-
-    time_check_ptr get_time_check_ptr();
-
 private:
     tcp::socket socket_;
     system_clock::time_point recv_last_timer_ = system_clock::now();
@@ -54,9 +50,7 @@ private:
     char recv_buffer[recv_buffer_max_size_];
     int connect_id_ = 0;
     bool is_connect_ = false;
-    client_connect_ptr connect_ptr_ = nullptr;
-    client_dis_connect_ptr dis_connect_ptr_ = nullptr;
-    client_recv_ptr recv_ptr_ = nullptr;
-    time_check_ptr time_ptr_ = nullptr;
+    std::shared_ptr<ipacket_format> packet_format_;
+    std::shared_ptr<ipacket_dispose> packet_dispose_;
 };
 
