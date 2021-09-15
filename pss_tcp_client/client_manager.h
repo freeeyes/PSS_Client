@@ -3,7 +3,7 @@
 #include "singleton.h"
 #include "pss_common.h"
 #include "ASIOClient.h"
-#include "io_timer.h"
+#include "tms.hpp"
 #include <vector>
 
 class CIO_Context_info
@@ -12,7 +12,6 @@ public:
     CIO_Context_info() = default;
 
     asio::io_context* io_context_ = nullptr;
-    std::thread tt_context_;
     bool thread_is_run_ = false;
 };
 
@@ -24,7 +23,9 @@ public:
         CIO_Context_info* io_context_info = new CIO_Context_info();
         io_context_info->io_context_ = new asio::io_context();
         io_context_list_.emplace_back(io_context_info);
-        io_context_list_count_ = 1;
+        io_context_list_count_ = 0;
+
+        App_tms::instance()->Init();
     }
 
     void timer_check()
@@ -34,7 +35,7 @@ public:
         for (const auto& io_session : asio_client_list_)
         {
             int time_pass_seconds = io_session.second->get_time_pass_seconds();
-            if (time_pass_seconds > timer_check_minseconds_ / 1000)
+            if (time_pass_seconds > timer_check_seconds_)
             {
                 //std::cout << "[CClient_Manager::timer_check]connect_id=" << io_session.first << " is timeout " << time_pass_seconds << "." << std::endl;
                 io_session.second->do_check_timeout(time_pass_seconds);
@@ -70,9 +71,6 @@ public:
         int client_id = curr_client_id_;
         curr_client_id_++;
 
-        auto io_context_index = client_id % io_context_list_count_;
-        auto io_context_ = io_context_list_[io_context_index]->io_context_;
-
         auto f = asio_client_list_.find(client_id);
         if (f != asio_client_list_.end())
         {
@@ -80,7 +78,7 @@ public:
         }
         else
         {
-            asio_client_list_[client_id] = std::make_shared<CASIOClient>(io_context_,
+            asio_client_list_[client_id] = std::make_shared<CASIOClient>(&io_context_,
                 connect_ptr,
                 dis_connect_ptr,
                 recv_ptr,
@@ -154,69 +152,77 @@ public:
 
         asio_client_list_.clear();
 
-        //关闭所有的线程
+        //关闭定时器
+        App_tms::instance()->Close();
+
+        //关闭所有的IO
+        io_context_.stop();
+        tt_context_.join();
+
         for (int i = 0; i < io_context_list_count_; i++)
         {
-            io_context_list_[i]->io_context_->stop();
-            io_context_list_[i]->tt_context_.join();
-
-            delete io_context_list_[i]->io_context_;
             delete io_context_list_[i];
         }
 
         io_context_list_.clear();
+        thread_is_run_ = false;
         io_context_list_count_ = 0;
     }
 
     void run(int io_context_count = 1, int timer_check_seconds = 30)
     {
-        //定时器
-        timer_check_minseconds_ = timer_check_seconds * 1000;
+        //绑定定时器
+        //初始化事件线程队列
+        for (int i = 0; i < io_context_count; i++)
+        {
+            App_tms::instance()->CreateLogic(i);
+        }
+
+        timer_check_seconds_ = timer_check_seconds;
 
         auto timer_check = std::bind(&CClient_Manager::timer_check, this);
-        asio_client_timer_.StartTimer(timer_check_minseconds_, timer_check);
+        App_tms::instance()->AddMessage_loop(0, 
+            std::chrono::seconds(0), 
+            std::chrono::seconds(timer_check_seconds_), 
+            timer_check);
 
         int add_io_context_count = io_context_count - io_context_list_count_;
         if (add_io_context_count > 0)
         {
-            //添加线程
+            //添加IO操作，这里不在使用多个IO线程，不需要了。
             for (int i = 0; i < add_io_context_count; i++)
             {
                 CIO_Context_info* io_context_info = new CIO_Context_info();
-                io_context_info->io_context_ = new asio::io_context();
+                //io_context_info->io_context_ = new asio::io_context();
+                io_context_info->io_context_ = &io_context_;
                 io_context_list_.emplace_back(io_context_info);
             }
 
             io_context_list_count_ += add_io_context_count;
         }
 
-        for (int i = 0; i < io_context_list_count_; i++)
+        if (false == thread_is_run_)
         {
-            if (io_context_list_[i]->thread_is_run_ == false)
-            {
-                io_context_list_[i]->tt_context_ = std::thread([this, i]()
+            //启动IO线程
+            tt_context_ = std::thread([this]()
+                {
+                    asio::executor_work_guard<asio::io_context::executor_type> work_guard_
+                        = asio::make_work_guard(io_context_);
+                    try
                     {
-                        asio::executor_work_guard<asio::io_context::executor_type> work_guard_ 
-                            = asio::make_work_guard(*io_context_list_[i]->io_context_);
-                        try
+                        std::cout << "[CClient_Manager::run](io_context) is run." << std::endl;
+                        thread_is_run_ = true;
+                        while (true)
                         {
-                            std::cout << "[CClient_Manager::run](" << i << ") is run." << std::endl;
-                            io_context_list_[i]->thread_is_run_ = true;
-                            while (true)
-                            {
-                                io_context_list_[i]->io_context_->run();
-                            }
-                            std::cout << "[CClient_Manager::run](" << i << ") is over." << std::endl;
+                            io_context_.run();
                         }
-                        catch (asio::error_code ec)
-                        {
-                            std::cout << "[CClient_Manager::run](" << i << ") is error=" << ec.message() << std::endl;
-                        }
-
-                        
-
-                    });
-            }
+                        std::cout << "[CClient_Manager::run](io_context) is over." << std::endl;
+                    }
+                    catch (asio::error_code ec)
+                    {
+                        std::cout << "[CClient_Manager::run](io_context) is error=" << ec.message() << std::endl;
+                    }
+                });
         }
 
         //挂起一会，等子线程启动完毕。
@@ -229,10 +235,9 @@ private:
     int io_context_list_count_ = 0;
     std::thread tt_context_;
     int curr_client_id_ = 1;
-    int timer_check_minseconds_ = 30000; //定时器检测时间
-
-    io_timer asio_client_timer_;
-
+    int timer_check_seconds_ = 30000; //定时器检测时间
+    asio::io_context  io_context_;
+    bool thread_is_run_ = false;
 };
 
 using App_Client_Manager = PSS_singleton<CClient_Manager>;

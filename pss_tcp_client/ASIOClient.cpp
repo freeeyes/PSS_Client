@@ -8,6 +8,7 @@ CASIOClient::CASIOClient(asio::io_context* io_context, client_connect_ptr connec
 bool CASIOClient::start(int connect_id, const std::string& server_ip, short server_port)
 {
     //建立连接
+    std::cout << "[CASIOClient::start]connect(" << connect_id << ")" << std::endl;
     connect_id_ = connect_id;
     tcp::endpoint end_point(asio::ip::address::from_string(server_ip.c_str()), server_port);
     asio::error_code connect_error;

@@ -78,7 +78,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>.\Bin</OutDir>
+    <OutDir>..\pss_tcp_client_test\Bin</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -156,9 +156,12 @@
     <ClInclude Include="ASIOClient.h" />
     <ClInclude Include="client_manager.h" />
     <ClInclude Include="framework.h" />
-    <ClInclude Include="io_timer.h" />
     <ClInclude Include="pss_common.h" />
     <ClInclude Include="singleton.h" />
+    <ClInclude Include="ThreadQueue.h" />
+    <ClInclude Include="TimerManager.hpp" />
+    <ClInclude Include="TimeStamp.hpp" />
+    <ClInclude Include="tms.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ASIOClient.cpp">

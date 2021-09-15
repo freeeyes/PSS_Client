@@ -1,8 +1,9 @@
 ﻿#include <iostream>
-#include "framework.h"
 #include <windows.h>
 #include <chrono>
 #include <thread>
+#include "framework.h"
+#include "packet_format.h"
 
 //测试PSS TCP Client 客户端
 //add by freeeyes
@@ -18,6 +19,9 @@ void client_dis_connect(int connect_id, std::string error)
 
 void client_recv(int connect_id, const char* buffer, int recv_length)
 {
+    cpacket_format packet_format;
+    packet_format.format_recv_buffer(connect_id, buffer, recv_length);
+
     std::cout << "[client_recv](" << connect_id << ")recv_length=" << recv_length << std::endl;
 }
 

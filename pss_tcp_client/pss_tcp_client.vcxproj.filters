@@ -30,7 +30,16 @@
     <ClInclude Include="client_manager.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="io_timer.h">
+    <ClInclude Include="TimerManager.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="TimeStamp.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="tms.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ThreadQueue.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
