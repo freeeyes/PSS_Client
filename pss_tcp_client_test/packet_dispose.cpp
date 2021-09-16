@@ -14,7 +14,7 @@ bool cpacket_dispose::do_message(int connect_id, crecv_packet recv_packet)
         case 0x0002:
         {
             //连接断开事件
-            std::cout << "[event]disconnect events(" << connect_id << ")." << std::endl;
+            std::cout << "[event]disconnect events(" << connect_id << "),error=" << recv_packet.packet_body_ << "." << std::endl;
             break;
         }
         case 0x0003:

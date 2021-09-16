@@ -5,6 +5,12 @@ CASIOClient::CASIOClient(asio::io_context* io_context, std::shared_ptr<ipacket_f
 {
 }
 
+int CASIOClient::get_tms_logic_id()
+{
+    int logic_thread_count = App_tms::instance()->Get_Logic_Count();
+    return connect_id_ % logic_thread_count;
+}
+
 bool CASIOClient::start(int connect_id, const std::string& server_ip, short server_port)
 {
     //建立连接
@@ -36,9 +42,13 @@ void CASIOClient::do_read()
                 //处理数据(发送消息)
                 auto recv_packet_list_info = packet_format_->format_recv_buffer(connect_id_, recv_buffer, length);
 
+                auto logic_thread_id = get_tms_logic_id();
+
                 for(auto recv_packet : recv_packet_list_info)
                 {
-                    packet_dispose_->do_message(connect_id_, recv_packet);
+                    App_tms::instance()->AddMessage(logic_thread_id, [this, recv_packet]() {
+                        packet_dispose_->do_message(connect_id_, recv_packet);
+                        });
                 }
 
                 recv_last_timer_ = system_clock::now();
@@ -49,9 +59,15 @@ void CASIOClient::do_read()
             {
                 //链接断开
                 //std::cout << "[CASIOClient::do_read]error=" << ec.message() << std::endl;
-                crecv_packet recv_packet;
-                recv_packet.command_id_ = disconnect_command_id;
-                packet_dispose_->do_message(connect_id_, recv_packet);
+                auto packet_dispose = packet_dispose_;
+                auto connect_id = connect_id_;
+                auto recv_error = ec.message();
+                App_tms::instance()->AddMessage(get_tms_logic_id(), [connect_id, packet_dispose, recv_error]() {
+                    crecv_packet recv_packet;
+                    recv_packet.command_id_ = disconnect_command_id;
+                    recv_packet.packet_body_ = recv_error;
+                    packet_dispose->do_message(connect_id, recv_packet);
+                    });
                 close_socket();
             }
         });
@@ -65,15 +81,20 @@ void CASIOClient::do_write_immediately(const char* data, size_t length)
     std::memcpy(send_buffer, data, length);
 
     int connect_id = connect_id_;
+    auto packet_dispose = packet_dispose_;
     asio::async_write(socket_, asio::buffer(data, length),
-        [self, send_buffer, connect_id](std::error_code ec, std::size_t send_length)
+        [self, send_buffer, connect_id, packet_dispose](std::error_code ec, std::size_t send_length)
         {
             if (ec)
             {
                 //发送失败
-                crecv_packet recv_packet;
-                recv_packet.command_id_ = disconnect_command_id;
-                self->packet_dispose_->do_message(connect_id, recv_packet);
+                auto write_error = ec.message();
+                App_tms::instance()->AddMessage(self->get_tms_logic_id(), [connect_id, write_error, packet_dispose, self]() {
+                    crecv_packet recv_packet;
+                    recv_packet.command_id_ = disconnect_command_id;
+                    recv_packet.packet_body_ = write_error;
+                    packet_dispose->do_message(connect_id, recv_packet);
+                    });
                 self->close_socket();
             }
 
@@ -84,6 +105,7 @@ void CASIOClient::do_write_immediately(const char* data, size_t length)
 
 void CASIOClient::close_socket()
 {
+    std::cout << "[CASIOClient::close_socket]connect_id=" << connect_id_ << std::endl;
     socket_.close();
 }
 
@@ -98,9 +120,11 @@ void CASIOClient::connect_handler(const asio::error_code& ec)
     {
         is_connect_ = true;
 
-        crecv_packet recv_packet;
-        recv_packet.command_id_ = connect_command_id;
-        packet_dispose_->do_message(connect_id_, recv_packet);
+        App_tms::instance()->AddMessage(get_tms_logic_id(), [this]() {
+                crecv_packet recv_packet;
+                recv_packet.command_id_ = connect_command_id;
+                packet_dispose_->do_message(connect_id_, recv_packet);
+            });
         
         do_read();
 
@@ -108,10 +132,16 @@ void CASIOClient::connect_handler(const asio::error_code& ec)
     else
     {
         is_connect_ = false;
-        std::cout << "[CASIOClient::start]error=" << ec.message() << std::endl;
-        crecv_packet recv_packet;
-        recv_packet.command_id_ = disconnect_command_id;
-        packet_dispose_->do_message(connect_id_, recv_packet);
+        //std::cout << "[CASIOClient::start]error=" << ec.message() << std::endl;
+        auto packet_dispose = packet_dispose_;
+        auto connect_id = connect_id_;
+        auto connect_error = ec.message();
+        App_tms::instance()->AddMessage(get_tms_logic_id(), [packet_dispose, connect_id, connect_error]() {
+            crecv_packet recv_packet;
+            recv_packet.packet_body_ = connect_error;
+            recv_packet.command_id_ = disconnect_command_id;
+            packet_dispose->do_message(connect_id, recv_packet);
+            });
     }
 }
 

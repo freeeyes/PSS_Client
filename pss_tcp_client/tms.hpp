@@ -100,6 +100,7 @@ public:
     //初始化
     void Init()
     {
+        m_nLogicThreadCount = 0;
         //创建定时器线程
         m_ttTimer = std::thread([this]()
             {
@@ -129,6 +130,8 @@ public:
             std::string thread_id_str = thread_id_stream.str();
 
             m_TidtologicidList[thread_id_str] = u4LogicID;
+
+            m_nLogicThreadCount++;
             //cout << "CreateLogic(" << u4LogicID << ")." << endl;
         }
 
@@ -249,6 +252,11 @@ public:
         m_ttTimer.join();
     }
 
+    int Get_Logic_Count()
+    {
+        return m_nLogicThreadCount;
+    }
+
 private:
     using mapthreads = map<uint32, std::shared_ptr<CLogicTasK>>;
     using mapthreadidtologicid = map<std::string, uint32>;
@@ -256,6 +264,7 @@ private:
     mapthreads m_mapLogicList;
     std::thread m_ttTimer;
     mapthreadidtologicid m_TidtologicidList;
+    int m_nLogicThreadCount = 0;
 };
 
 using App_tms = PSS_singleton<TMS>;

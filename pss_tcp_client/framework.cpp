@@ -14,14 +14,9 @@ void unload_module()
     App_Client_Manager::instance()->close();
 }
 
-int create_new_client(std::shared_ptr<ipacket_format> packet_format, std::shared_ptr<ipacket_dispose> packet_dispose)
+int start_client(const std::string& server_ip, short server_port, std::shared_ptr<ipacket_format> packet_format, std::shared_ptr<ipacket_dispose> packet_dispose)
 {
-    return App_Client_Manager::instance()->create_new_client(packet_format, packet_dispose);
-}
-
-bool start_client(int client_id, const std::string& server_ip, short server_port)
-{
-    return App_Client_Manager::instance()->start_client(client_id, server_ip, server_port);
+    return App_Client_Manager::instance()->start_client(server_ip, server_port, packet_format, packet_dispose);
 }
 
 void close_client(int client_id)

@@ -15,17 +15,15 @@ void Test_Tcp_Connect()
     auto packet_format = std::make_shared<cpacket_format>();
     auto packet_dispose = std::make_shared<cpacket_dispose>();
 
-    int client_id = create_new_client(packet_format, packet_dispose);
-
-    start_client(client_id, client_ip, 10002);
+    int client_id = start_client(client_ip, 10002, packet_format, packet_dispose);
 
     //测试发送数据
     char body_buffer[200] = { '\0' };
     std::string send_packet = packet_format->format_send_buffer(client_id, 0x2101, body_buffer, 200);
 
-    client_send_data(client_id, send_packet, send_packet.size());
+    client_send_data(client_id, send_packet, (int)send_packet.size());
     this_thread::sleep_for(chrono::milliseconds(10));
-    //close_client(client_id);
+    close_client(client_id);
 
 }
 

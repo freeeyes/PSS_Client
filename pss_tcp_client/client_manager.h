@@ -3,7 +3,6 @@
 #include "singleton.h"
 #include "pss_common.h"
 #include "ASIOClient.h"
-#include "tms.hpp"
 #include <vector>
 
 class CIO_Context_info
@@ -28,20 +27,30 @@ public:
         App_tms::instance()->Init();
     }
 
+    int get_tms_logic_id(int connect_id)
+    {
+        int logic_thread_count = App_tms::instance()->Get_Logic_Count();
+        return connect_id % logic_thread_count;
+    }
+
     void timer_check()
     {
-        //定时器检查所有的客户端是否到期
-        std::cout << "[CClient_Manager::timer_check]begin" << std::endl;
-        for (const auto& io_session : asio_client_list_)
-        {
-            int time_pass_seconds = io_session.second->get_time_pass_seconds();
-            if (time_pass_seconds > timer_check_seconds_)
+        //考虑到使用锁的问题，在这里直接使用线程消息去处理
+
+        App_tms::instance()->AddMessage(0, [this]() {
+            //定时器检查所有的客户端是否到期
+            std::cout << "[CClient_Manager::timer_check]begin" << std::endl;
+            for (const auto& io_session : asio_client_list_)
             {
-                //std::cout << "[CClient_Manager::timer_check]connect_id=" << io_session.first << " is timeout " << time_pass_seconds << "." << std::endl;
-                io_session.second->do_check_timeout(time_pass_seconds);
+                int time_pass_seconds = io_session.second->get_time_pass_seconds();
+                if (time_pass_seconds > timer_check_seconds_)
+                {
+                    //std::cout << "[CClient_Manager::timer_check]connect_id=" << io_session.first << " is timeout " << time_pass_seconds << "." << std::endl;
+                    io_session.second->do_check_timeout(time_pass_seconds);
+                }
             }
-        }
-        std::cout << "[CClient_Manager::timer_check]end" << std::endl;
+            std::cout << "[CClient_Manager::timer_check]end" << std::endl;
+            });
     }
 
     int create_new_client(std::shared_ptr<ipacket_format> packet_format, std::shared_ptr<ipacket_dispose> packet_dispose)
@@ -57,24 +66,31 @@ public:
         }
         else
         {
-            asio_client_list_[client_id] = std::make_shared<CASIOClient>(&io_context_,
-                packet_format,
-                packet_dispose);
+            App_tms::instance()->AddMessage(get_tms_logic_id(client_id), [client_id, this, packet_format, packet_dispose]() {
+                asio_client_list_[client_id] = std::make_shared<CASIOClient>(&io_context_,
+                    packet_format,
+                    packet_dispose);
+            });
             return client_id;
         }
     }
 
-    bool start_client(int client_id, const std::string& server_ip, short server_port)
+    int start_client(const std::string& server_ip, short server_port, std::shared_ptr<ipacket_format> packet_format, std::shared_ptr<ipacket_dispose> packet_dispose)
     {
-        auto f = asio_client_list_.find(client_id);
-        if (f != asio_client_list_.end())
-        {
-            return f->second->start(client_id, server_ip, server_port);
-        }
-        else
-        {
-            return false;
-        }
+        std::lock_guard<std::mutex> guard(thread_mutex_);
+
+        //这里获得当前的ID，需要加锁
+        int client_id = curr_client_id_;
+        curr_client_id_++;
+
+        //丢到消息线程里去做
+        asio_client_list_[client_id] = std::make_shared<CASIOClient>(&io_context_,
+            packet_format,
+            packet_dispose);
+
+        asio_client_list_[client_id]->start(client_id, server_ip, server_port);
+
+        return client_id;
     }
 
     bool client_send_data(int client_id, const std::string& send_buff, int send_size)
@@ -82,7 +98,10 @@ public:
         auto f = asio_client_list_.find(client_id);
         if (f != asio_client_list_.end())
         {
-            f->second->do_write_immediately(send_buff.c_str(), send_size);
+            auto client = f->second;
+            App_tms::instance()->AddMessage(get_tms_logic_id(client_id), [client_id, client, send_buff, send_size]() {
+                client->do_write_immediately(send_buff.c_str(), send_size);
+                });
             return true;
         }
         else
@@ -93,6 +112,7 @@ public:
 
     bool close_client(int client_id)
     {
+        std::lock_guard<std::mutex> guard(thread_mutex_);
         auto f = asio_client_list_.find(client_id);
         if (f != asio_client_list_.end())
         {
@@ -108,12 +128,16 @@ public:
 
     void close()
     {
+        std::lock_guard<std::mutex> guard(thread_mutex_);
         for (const auto& client : asio_client_list_)
         {
             client.second->close_socket();
         }
 
         asio_client_list_.clear();
+
+        //等待异步处理链接断开消息
+        this_thread::sleep_for(std::chrono::milliseconds(100));
 
         //关闭定时器
         App_tms::instance()->Close();
@@ -189,7 +213,7 @@ public:
         }
 
         //挂起一会，等子线程启动完毕。
-        this_thread::sleep_for(chrono::milliseconds(5));
+        this_thread::sleep_for(chrono::milliseconds(10));
     }
 
 private:
@@ -201,6 +225,7 @@ private:
     int timer_check_seconds_ = 30000; //定时器检测时间
     asio::io_context  io_context_;
     bool thread_is_run_ = false;
+    std::mutex thread_mutex_;
 };
 
 using App_Client_Manager = PSS_singleton<CClient_Manager>;

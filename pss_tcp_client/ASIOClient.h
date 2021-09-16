@@ -7,7 +7,7 @@
 #include <chrono>
 #include <asio.hpp>
 #include "pss_common.h"
-
+#include "tms.hpp"
 
 using namespace std::chrono;
 using asio::ip::tcp;
@@ -24,6 +24,8 @@ class CASIOClient : public std::enable_shared_from_this<CASIOClient>
 {
 public:
     explicit CASIOClient(asio::io_context* io_context, std::shared_ptr<ipacket_format> packet_format, std::shared_ptr<ipacket_dispose> packet_dispose);
+
+    int get_tms_logic_id();
 
     bool start(int connect_id, const std::string& server_ip, short server_port);
 
