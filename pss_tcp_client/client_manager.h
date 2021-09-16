@@ -152,6 +152,11 @@ public:
 
     void run(int io_context_count = 1, int timer_check_seconds = 30)
     {
+        if (true == is_Init_)
+        {
+            return;
+        }
+
         //绑定定时器
         //初始化事件线程队列
         for (int i = 0; i < io_context_count; i++)
@@ -208,6 +213,7 @@ public:
 
         //挂起一会，等子线程启动完毕。
         this_thread::sleep_for(chrono::milliseconds(10));
+        is_Init_ = true;
     }
 
 private:
@@ -220,6 +226,7 @@ private:
     asio::io_context  io_context_;
     bool thread_is_run_ = false;
     std::mutex thread_mutex_;
+    bool is_Init_ = false;
 };
 
 using App_Client_Manager = PSS_singleton<CClient_Manager>;
