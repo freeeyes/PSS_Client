@@ -16,6 +16,8 @@ bool CASIOClient::start(int connect_id, const std::string& server_ip, short serv
     //建立连接
     std::cout << "[CASIOClient::start]connect(" << connect_id << ")" << std::endl;
     connect_id_ = connect_id;
+    server_ip_ = server_ip;
+    server_port_ = server_port;
     tcp::endpoint end_point(asio::ip::address::from_string(server_ip.c_str()), server_port);
     asio::error_code connect_error;
 
@@ -125,9 +127,11 @@ void CASIOClient::connect_handler(const asio::error_code& ec)
                 recv_packet.command_id_ = connect_command_id;
                 packet_dispose_->do_message(connect_id_, recv_packet);
             });
+
+        //更新接收时间
+        recv_last_timer_ = system_clock::now();
         
         do_read();
-
     }
     else
     {
@@ -166,9 +170,42 @@ int CASIOClient::get_time_pass_seconds()
 
 void CASIOClient::do_check_timeout(int seconds)
 {
-    crecv_packet recv_packet;
-    recv_packet.command_id_ = time_check_command_id;
-    recv_packet.packet_body_ = std::to_string(seconds);
-    packet_dispose_->do_message(connect_id_, recv_packet);
+    if (is_connect_ == true)
+    {
+        //只有在链接状态的时候，才发送检测超时消息。
+        crecv_packet recv_packet;
+        recv_packet.command_id_ = time_check_command_id;
+        recv_packet.packet_body_ = std::to_string(seconds);
+        packet_dispose_->do_message(connect_id_, recv_packet);
+    }
+    else
+    {
+        //重新链接服务器
+        reconnect();
+    }
+}
+
+void CASIOClient::reconnect()
+{
+    if (false == is_connect_)
+    {
+        //重连
+        std::cout << "[CASIOClient::reconnect]connect(" << connect_id_ << ")" << std::endl;
+        tcp::endpoint end_point(asio::ip::address::from_string(server_ip_.c_str()), server_port_);
+        asio::error_code connect_error;
+
+        auto handler = std::bind(
+            &CASIOClient::connect_handler,
+            this,
+            std::placeholders::_1);
+
+        //异步链接
+        socket_.async_connect(end_point, handler);
+    }
+    else
+    {
+        //链接已存在，不需要重连
+        std::cout << "[CASIOClient::reconnect]connect(" << connect_id_ << ") is exist" << std::endl;
+    }
 }
 

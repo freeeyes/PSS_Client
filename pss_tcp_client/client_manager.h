@@ -53,28 +53,6 @@ public:
             });
     }
 
-    int create_new_client(std::shared_ptr<ipacket_format> packet_format, std::shared_ptr<ipacket_dispose> packet_dispose)
-    {
-        //获得新的ID
-        int client_id = curr_client_id_;
-        curr_client_id_++;
-
-        auto f = asio_client_list_.find(client_id);
-        if (f != asio_client_list_.end())
-        {
-            return -1;
-        }
-        else
-        {
-            App_tms::instance()->AddMessage(get_tms_logic_id(client_id), [client_id, this, packet_format, packet_dispose]() {
-                asio_client_list_[client_id] = std::make_shared<CASIOClient>(&io_context_,
-                    packet_format,
-                    packet_dispose);
-            });
-            return client_id;
-        }
-    }
-
     int start_client(const std::string& server_ip, short server_port, std::shared_ptr<ipacket_format> packet_format, std::shared_ptr<ipacket_dispose> packet_dispose)
     {
         std::lock_guard<std::mutex> guard(thread_mutex_);
@@ -122,6 +100,22 @@ public:
         }
         else
         {
+            return false;
+        }
+    }
+
+    bool reconnect_server(int client_id)
+    {
+        std::lock_guard<std::mutex> guard(thread_mutex_);
+        auto f = asio_client_list_.find(client_id);
+        if (f != asio_client_list_.end())
+        {
+            f->second->reconnect();
+            return true;
+        }
+        else
+        {
+            std::cout << "[reconnect_server]no find connect_id(" << client_id << ")." << std::endl;
             return false;
         }
     }

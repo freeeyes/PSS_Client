@@ -19,6 +19,11 @@ int start_client(const std::string& server_ip, short server_port, std::shared_pt
     return App_Client_Manager::instance()->start_client(server_ip, server_port, packet_format, packet_dispose);
 }
 
+DECLDIR bool reconnect_server(int client_id)
+{
+    return App_Client_Manager::instance()->reconnect_server(client_id);
+}
+
 void close_client(int client_id)
 {
     App_Client_Manager::instance()->close_client(client_id);

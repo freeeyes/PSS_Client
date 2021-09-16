@@ -45,6 +45,8 @@ public:
 
     void do_check_timeout(int seconds);
 
+    void reconnect();
+
 private:
     tcp::socket socket_;
     system_clock::time_point recv_last_timer_ = system_clock::now();
@@ -54,5 +56,7 @@ private:
     bool is_connect_ = false;
     std::shared_ptr<ipacket_format> packet_format_;
     std::shared_ptr<ipacket_dispose> packet_dispose_;
+    std::string server_ip_;
+    short server_port_;
 };
 
