@@ -1,4 +1,5 @@
 ﻿#include "framework.h"
+#if PSS_PLATFORM == PLATFORM_WIN
 #include "windows.h"
 
 BOOL APIENTRY DllMain( HMODULE hModule,
@@ -19,4 +20,5 @@ BOOL APIENTRY DllMain( HMODULE hModule,
     }
     return TRUE;
 }
+#endif
 

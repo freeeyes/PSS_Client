@@ -1,0 +1,65 @@
+cmake_minimum_required(VERSION 3.0)
+PROJECT(pss_client)
+
+if(UNIX)
+	set(BIN_OUTPUT_DIR ${PROJECT_SOURCE_DIR}/Lib)
+	set(LIB_OUTPUT_DIR ${PROJECT_SOURCE_DIR}/Lib)
+	
+	#linux
+	include(CheckCXXCompilerFlag)
+	CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
+	if(COMPILER_SUPPORTS_CXX11)
+		message("set C++ 11...")
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+	endif()	
+else()
+	set(BIN_OUTPUT_DIR ${PROJECT_SOURCE_DIR}/Lib)
+	set(LIB_OUTPUT_DIR ${PROJECT_SOURCE_DIR}/Lib)
+	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG "${BIN_OUTPUT_DIR}")
+	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "${BIN_OUTPUT_DIR}")
+	set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG "${BIN_OUTPUT_DIR}")
+	set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE "${BIN_OUTPUT_DIR}")
+	set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG "${BIN_OUTPUT_DIR}")
+	set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE "${BIN_OUTPUT_DIR}")
+endif()
+
+file(GLOB MAIN_FILES *.cpp)
+source_group("main_file" FILES ${MAIN_FILES})
+
+include_directories(
+	${PROJECT_SOURCE_DIR}/third_include/
+	${PROJECT_SOURCE_DIR}/)
+
+ADD_LIBRARY(${PROJECT_NAME} SHARED 
+	${MAIN_FILES}
+	)
+
+#ifwindows	
+#__DEBUG;_USRDLL;TEST_LOGIC_EXPORTS;_WINDOWS;%(PreprocessorDefinitions)
+if(WIN32)
+	message("OS is windows...")
+	if(CMAKE_BUILD_TYPE MATCHES "debug")
+		add_definitions(
+		-D_DEBUG
+		-D_USRDLL
+		-DTEST_LOGIC_EXPORTS
+		-D_WINDOWS)
+	else()
+		message("OS is linux...")
+		add_definitions(
+		-DNDEBUG
+		-D_USRDLL
+		-DTEST_LOGIC_EXPORTS
+		-D_WINDOWS)		
+	endif()
+endif()
+
+if(UNIX)
+	target_link_libraries(${PROJECT_NAME} -lpthread)
+endif()
+
+set_target_properties(${PROJECT_NAME} PROPERTIES 
+	OUTPUT_NAME_DEBUG ${PROJECT_NAME}
+	ARCHIVE_OUTPUT_DIRECTORY ${BIN_OUTPUT_DIR}
+    RUNTIME_OUTPUT_DIRECTORY ${BIN_OUTPUT_DIR}
+    LIBRARY_OUTPUT_DIRECTORY ${BIN_OUTPUT_DIR})
