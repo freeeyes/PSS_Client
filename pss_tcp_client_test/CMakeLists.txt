@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.0)
-PROJECT(pss_client)
+PROJECT(test_pss_client)
 
 if(UNIX)
-	set(BIN_OUTPUT_DIR ${PROJECT_SOURCE_DIR}/lib)
-	set(LIB_OUTPUT_DIR ${PROJECT_SOURCE_DIR}/lib)
+	set(BIN_OUTPUT_DIR ${PROJECT_SOURCE_DIR}/bin)
+	set(LIB_OUTPUT_DIR ${PROJECT_SOURCE_DIR}/bin)
 	
 	#linux
 	include(CheckCXXCompilerFlag)
@@ -13,8 +13,8 @@ if(UNIX)
 		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 	endif()	
 else()
-	set(BIN_OUTPUT_DIR ${PROJECT_SOURCE_DIR}/lib)
-	set(LIB_OUTPUT_DIR ${PROJECT_SOURCE_DIR}/lib)
+	set(BIN_OUTPUT_DIR ${PROJECT_SOURCE_DIR}/bin)
+	set(LIB_OUTPUT_DIR ${PROJECT_SOURCE_DIR}/bin)
 	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG "${BIN_OUTPUT_DIR}")
 	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "${BIN_OUTPUT_DIR}")
 	set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG "${BIN_OUTPUT_DIR}")
@@ -27,35 +27,18 @@ file(GLOB MAIN_FILES *.cpp)
 source_group("main_file" FILES ${MAIN_FILES})
 
 include_directories(
-	${PROJECT_SOURCE_DIR}/third_include/
+	${PROJECT_SOURCE_DIR}/Include/
 	${PROJECT_SOURCE_DIR}/)
 
-ADD_LIBRARY(${PROJECT_NAME} SHARED 
+link_directories(../pss_tcp_client/lib/)
+
+add_executable(${PROJECT_NAME} 
 	${MAIN_FILES}
 	)
 
-#ifwindows	
-#__DEBUG;_USRDLL;TEST_LOGIC_EXPORTS;_WINDOWS;%(PreprocessorDefinitions)
-if(WIN32)
-	message("OS is windows...")
-	if(CMAKE_BUILD_TYPE MATCHES "debug")
-		add_definitions(
-		-D_DEBUG
-		-D_USRDLL
-		-DTEST_LOGIC_EXPORTS
-		-D_WINDOWS)
-	else()
-		message("OS is linux...")
-		add_definitions(
-		-DNDEBUG
-		-D_USRDLL
-		-DTEST_LOGIC_EXPORTS
-		-D_WINDOWS)		
-	endif()
-endif()
-
 if(UNIX)
-	target_link_libraries(${PROJECT_NAME} -lpthread)
+	message("set linux so link...")
+	target_link_libraries(${PROJECT_NAME} pthread pss_client)	
 endif()
 
 set_target_properties(${PROJECT_NAME} PROPERTIES 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "framework.h"
+#include <cstring>
 
 const size_t MAX_BUFFER_SIZE = 20480;  //最大buffer缓冲长度
 const size_t PACKET_HEAD_SIZE = 2 * sizeof(short) + sizeof(int) + 32 * sizeof(char);

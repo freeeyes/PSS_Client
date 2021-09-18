@@ -1,10 +1,13 @@
 ﻿#include <iostream>
-#include <windows.h>
 #include <chrono>
 #include <thread>
 #include "framework.h"
 #include "packet_format.h"
 #include "packet_dispose.h"
+
+#if PSS_PLATFORM == PLATFORM_WIN
+#include <windows.h>
+#endif
 
 //测试PSS TCP Client 客户端
 //add by freeeyes
@@ -22,11 +25,14 @@ void Test_Tcp_Connect()
     std::string send_packet = packet_format->format_send_buffer(client_id, 0x2101, body_buffer, 200);
 
     client_send_data(client_id, send_packet, (int)send_packet.size());
-    this_thread::sleep_for(chrono::milliseconds(10));
+    std::cout << "begin wait recv" << std::endl;
+    this_thread::sleep_for(chrono::milliseconds(1000));
+    std::cout << "end wait recv" << std::endl;
     close_client(client_id);
 
 }
 
+#if PSS_PLATFORM == PLATFORM_WIN
 BOOL WINAPI CtrlHandler(DWORD fdwCtrlType)
 {
     switch (fdwCtrlType)
@@ -38,12 +44,15 @@ BOOL WINAPI CtrlHandler(DWORD fdwCtrlType)
 
     return TRUE;
 }
+#endif
 
 int main()
 {
     load_module(1, 5);
 
+#if PSS_PLATFORM == PLATFORM_WIN
     SetConsoleCtrlHandler(CtrlHandler, TRUE);
+#endif
 
     Test_Tcp_Connect();
 
