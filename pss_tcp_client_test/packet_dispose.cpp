@@ -9,6 +9,16 @@ bool cpacket_dispose::do_message(int connect_id, crecv_packet recv_packet)
         {
             //建立连接事件
             std::cout << "[event]connect events(" << connect_id << ")." << std::endl;
+
+            //测试发送数据
+            char body_buffer[200] = { '\0' };
+            std::string send_packet = packet_format_->format_send_buffer(connect_id, 0x2101, body_buffer, 200);
+            //this_thread::sleep_for(chrono::milliseconds(100));
+            client_send_data(connect_id, send_packet, (int)send_packet.size());
+            //std::cout << "begin wait recv" << std::endl;
+            //this_thread::sleep_for(chrono::milliseconds(1000));
+            //std::cout << "end wait recv" << std::endl;
+
             break;
         }
         case 0x0002:
@@ -32,4 +42,9 @@ bool cpacket_dispose::do_message(int connect_id, crecv_packet recv_packet)
     }
 
     return true;
+}
+
+void cpacket_dispose::set_packet_format(std::shared_ptr<ipacket_format> packet_format)
+{
+    packet_format_ = packet_format;
 }

@@ -14,20 +14,14 @@
 
 void Test_Tcp_Connect()
 {
-    std::string client_ip = "127.0.0.1";
+    std::string client_ip = "116.30.223.246";
+    short client_port = 8866;
     auto packet_format = std::make_shared<cpacket_format>();
     auto packet_dispose = std::make_shared<cpacket_dispose>();
+    packet_dispose->set_packet_format(packet_format);
 
-    int client_id = start_client(client_ip, 10002, packet_format, packet_dispose);
+    int client_id = start_client(client_ip, client_port, packet_format, packet_dispose);
 
-    //测试发送数据
-    char body_buffer[200] = { '\0' };
-    std::string send_packet = packet_format->format_send_buffer(client_id, 0x2101, body_buffer, 200);
-
-    client_send_data(client_id, send_packet, (int)send_packet.size());
-    std::cout << "begin wait recv" << std::endl;
-    this_thread::sleep_for(chrono::milliseconds(1000));
-    std::cout << "end wait recv" << std::endl;
     //close_client(client_id);
 
 }
