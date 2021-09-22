@@ -71,6 +71,11 @@ void CASIOClient::do_read()
                     packet_dispose->do_message(connect_id, recv_packet);
                     });
                 close_socket();
+                //自动重连消息
+                App_tms::instance()->AddMessage(self->get_tms_logic_id(), [self]() {
+                    //自动重连
+                    self->reconnect();
+                    });
             }
         });
 }
@@ -98,6 +103,11 @@ void CASIOClient::do_write_immediately(const char* data, size_t length)
                     packet_dispose->do_message(connect_id, recv_packet);
                     });
                 self->close_socket();
+                //自动重连消息
+                App_tms::instance()->AddMessage(self->get_tms_logic_id(), [self]() {
+                    //自动重连
+                    self->reconnect();
+                    });
             }
 
             self->set_write_time();
@@ -108,6 +118,7 @@ void CASIOClient::do_write_immediately(const char* data, size_t length)
 void CASIOClient::close_socket()
 {
     std::cout << "[CASIOClient::close_socket]connect_id=" << connect_id_ << std::endl;
+    is_connect_ = false;
     socket_.close();
 }
 

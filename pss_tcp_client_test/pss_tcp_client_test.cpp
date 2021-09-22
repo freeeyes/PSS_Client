@@ -28,7 +28,7 @@ void Test_Tcp_Connect()
     std::cout << "begin wait recv" << std::endl;
     this_thread::sleep_for(chrono::milliseconds(1000));
     std::cout << "end wait recv" << std::endl;
-    close_client(client_id);
+    //close_client(client_id);
 
 }
 
