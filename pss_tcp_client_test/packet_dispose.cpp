@@ -13,11 +13,7 @@ bool cpacket_dispose::do_message(int connect_id, crecv_packet recv_packet)
             //测试发送数据
             char body_buffer[200] = { '\0' };
             std::string send_packet = packet_format_->format_send_buffer(connect_id, 0x2101, body_buffer, 200);
-            //this_thread::sleep_for(chrono::milliseconds(100));
             client_send_data(connect_id, send_packet, (int)send_packet.size());
-            //std::cout << "begin wait recv" << std::endl;
-            //this_thread::sleep_for(chrono::milliseconds(1000));
-            //std::cout << "end wait recv" << std::endl;
 
             break;
         }
@@ -37,6 +33,10 @@ bool cpacket_dispose::do_message(int connect_id, crecv_packet recv_packet)
         {
             //业务逻辑消息
             std::cout << "[event]logic events(" << connect_id << ") command id=" << recv_packet.command_id_ << ", body_length=" << recv_packet.packet_size_ <<"." << std::endl;
+            //测试发送数据
+            char body_buffer[200] = { '\0' };
+            std::string send_packet = packet_format_->format_send_buffer(connect_id, 0x2101, body_buffer, 200);
+            client_send_data(connect_id, send_packet, (int)send_packet.size());
             break;
         }
     }

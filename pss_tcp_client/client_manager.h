@@ -19,9 +19,6 @@ class CClient_Manager
 public:
     CClient_Manager()
     {
-        CIO_Context_info* io_context_info = new CIO_Context_info();
-        io_context_info->io_context_ = new asio::io_context();
-        io_context_list_.emplace_back(io_context_info);
         io_context_list_count_ = 0;
 
         App_tms::instance()->Init();
@@ -123,29 +120,27 @@ public:
     void close()
     {
         std::lock_guard<std::mutex> guard(thread_mutex_);
-        for (const auto& client : asio_client_list_)
-        {
-            client.second->close_socket();
-        }
-
-        asio_client_list_.clear();
-
-        //等待异步处理链接断开消息
-        this_thread::sleep_for(std::chrono::milliseconds(100));
-
-        //关闭定时器
-        App_tms::instance()->Close();
 
         //关闭所有的IO
-        io_context_.stop();
-        tt_context_.join();
-
-        for (int i = 0; i < io_context_list_count_; i++)
+        if (thread_is_run_ == true)
         {
-            delete io_context_list_[i];
+            for (const auto& client : asio_client_list_)
+            {
+                client.second->close_socket();
+            }
+
+            asio_client_list_.clear();
+
+            //等待异步处理链接断开消息
+            this_thread::sleep_for(std::chrono::milliseconds(100));
+
+            io_context_.stop();
+            tt_context_.join();
+
+            //关闭定时器
+            App_tms::instance()->Close();
         }
 
-        io_context_list_.clear();
         thread_is_run_ = false;
         io_context_list_count_ = 0;
     }
@@ -176,14 +171,6 @@ public:
         if (add_io_context_count > 0)
         {
             //添加IO操作，这里不在使用多个IO线程，不需要了。
-            for (int i = 0; i < add_io_context_count; i++)
-            {
-                CIO_Context_info* io_context_info = new CIO_Context_info();
-                //io_context_info->io_context_ = new asio::io_context();
-                io_context_info->io_context_ = &io_context_;
-                io_context_list_.emplace_back(io_context_info);
-            }
-
             io_context_list_count_ += add_io_context_count;
         }
 
@@ -218,7 +205,6 @@ public:
 
 private:
     map<int, std::shared_ptr<CASIOClient>> asio_client_list_;
-    vector<CIO_Context_info*> io_context_list_;
     int io_context_list_count_ = 0;
     std::thread tt_context_;
     int curr_client_id_ = 1;
