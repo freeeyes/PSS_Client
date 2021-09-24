@@ -83,7 +83,7 @@ void CASIOClient::do_read()
 void CASIOClient::do_write_format_data(short command_id, const char* data, size_t length)
 {
     std::string send_packet = packet_format_->format_send_buffer(connect_id_, command_id, data, length);
-    do_write_immediately(data, length);
+    do_write_immediately(send_packet.c_str(), send_packet.size());
 }
 
 void CASIOClient::do_write_immediately(const char* data, size_t length)

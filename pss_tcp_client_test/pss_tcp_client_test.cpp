@@ -14,8 +14,8 @@
 
 void Test_Tcp_Connect()
 {
-    std::string client_ip = "116.30.223.246";
-    short client_port = 8866;
+    std::string client_ip = "127.0.0.1";
+    short client_port = 10002;
     auto packet_format = std::make_shared<cpacket_format>();
     auto packet_dispose = std::make_shared<cpacket_dispose>();
 
