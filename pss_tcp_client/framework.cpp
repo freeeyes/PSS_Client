@@ -26,6 +26,15 @@ int start_client(const std::string& server_ip, short server_port, std::shared_pt
         //udpÁ´½Ó
         return App_Client_Manager::instance()->start_client_udp(server_ip, server_port, packet_format, packet_dispose);
     }
+    else if (em_io_type::IO_TYPE_TTY == io_type)
+    {
+        //ttyÁ´½Ó
+        return App_Client_Manager::instance()->start_client_tty(server_ip, server_port, packet_format, packet_dispose);
+    }
+    else
+    {
+        return false;
+    }
 }
 
 DECLDIR bool reconnect_server(int client_id)

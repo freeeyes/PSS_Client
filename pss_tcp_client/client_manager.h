@@ -4,6 +4,7 @@
 #include "pss_common.h"
 #include "ASIOClient.h"
 #include "ASIOUDPClient.h"
+#include "ASIOTTYClient.h"
 #include <vector>
 
 class CClient_Manager
@@ -74,6 +75,24 @@ public:
             packet_dispose);
 
         asio_client_list_[client_id]->start(client_id, server_ip, server_port);
+
+        return client_id;
+    }
+
+    int start_client_tty(const std::string& tty_name, short tty_port, std::shared_ptr<ipacket_format> packet_format, std::shared_ptr<ipacket_dispose> packet_dispose)
+    {
+        std::lock_guard<std::mutex> guard(thread_mutex_);
+
+        //这里获得当前的ID，需要加锁
+        int client_id = curr_client_id_;
+        curr_client_id_++;
+
+        //丢到消息线程里去做
+        asio_client_list_[client_id] = std::make_shared<CASIOTTYClient>(&io_context_,
+            packet_format,
+            packet_dispose);
+
+        asio_client_list_[client_id]->start(client_id, tty_name, tty_port);
 
         return client_id;
     }

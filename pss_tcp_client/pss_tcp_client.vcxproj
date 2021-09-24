@@ -121,7 +121,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;PSSTCPCLIENT_EXPORTS;_WINDOWS;_USRDLL;_WIN32_WINDOWS;_WINSOCK_DEPRECATED_NO_WARNINGS;ASIO_HAS_IOCP;ASIO_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;PSSTCPCLIENT_EXPORTS;_WINDOWS;_USRDLL;_WIN32_WINDOWS;_WINSOCK_DEPRECATED_NO_WARNINGS;ASIO_HAS_IOCP;ASIO_HAS_SERIAL_PORT;ASIO_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
@@ -154,6 +154,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="ASIOClient.h" />
+    <ClInclude Include="ASIOTTYClient.h" />
     <ClInclude Include="ASIOUDPClient.h" />
     <ClInclude Include="client_manager.h" />
     <ClInclude Include="framework.h" />
@@ -167,6 +168,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ASIOClient.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="ASIOTTYClient.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="ASIOUDPClient.cpp">
