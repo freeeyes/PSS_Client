@@ -22,6 +22,7 @@ DECLDIR void unload_module();
 DECLDIR int start_client(const std::string& server_ip, short server_port, std::shared_ptr<ipacket_format> packet_format, std::shared_ptr<ipacket_dispose> packet_dispose);
 DECLDIR bool reconnect_server(int client_id);
 DECLDIR bool client_send_data(int client_id, const std::string& send_buff, int send_size);
+DECLDIR bool client_send_format_data(int client_id, short command_id, const std::string& send_buff, int send_size);
 DECLDIR void close_client(int client_id);
 
 

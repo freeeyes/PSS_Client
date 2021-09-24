@@ -12,8 +12,9 @@ bool cpacket_dispose::do_message(int connect_id, crecv_packet recv_packet)
 
             //测试发送数据
             char body_buffer[200] = { '\0' };
-            std::string send_packet = packet_format_->format_send_buffer(connect_id, 0x2101, body_buffer, 200);
-            client_send_data(connect_id, send_packet, (int)send_packet.size());
+            std::string send_packet;
+            send_packet.append(body_buffer, 200);
+            client_send_format_data(connect_id, 0x2101, send_packet, (int)send_packet.size());
 
             break;
         }
@@ -35,16 +36,12 @@ bool cpacket_dispose::do_message(int connect_id, crecv_packet recv_packet)
             std::cout << "[event]logic events(" << connect_id << ") command id=" << recv_packet.command_id_ << ", body_length=" << recv_packet.packet_size_ <<"." << std::endl;
             //测试发送数据
             char body_buffer[200] = { '\0' };
-            std::string send_packet = packet_format_->format_send_buffer(connect_id, 0x2101, body_buffer, 200);
-            client_send_data(connect_id, send_packet, (int)send_packet.size());
+            std::string send_packet;
+            send_packet.append(body_buffer, 200);
+            client_send_format_data(connect_id, 0x2101, send_packet, (int)send_packet.size());
             break;
         }
     }
 
     return true;
-}
-
-void cpacket_dispose::set_packet_format(std::shared_ptr<ipacket_format> packet_format)
-{
-    packet_format_ = packet_format;
 }

@@ -18,7 +18,6 @@ void Test_Tcp_Connect()
     short client_port = 8866;
     auto packet_format = std::make_shared<cpacket_format>();
     auto packet_dispose = std::make_shared<cpacket_dispose>();
-    packet_dispose->set_packet_format(packet_format);
 
     int client_id = start_client(client_ip, client_port, packet_format, packet_dispose);
 

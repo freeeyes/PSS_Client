@@ -70,13 +70,28 @@ public:
 
     bool client_send_data(int client_id, const std::string& send_buff, int send_size)
     {
+        std::lock_guard<std::mutex> guard(thread_mutex_);
         auto f = asio_client_list_.find(client_id);
         if (f != asio_client_list_.end())
         {
             auto client = f->second;
-            App_tms::instance()->AddMessage(get_tms_logic_id(client_id), [client_id, client, send_buff, send_size]() {
-                client->do_write_immediately(send_buff.c_str(), send_size);
-                });
+            client->do_write_immediately(send_buff.c_str(), send_size);
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    bool client_send_format_data(int client_id, short command_id, const std::string& send_buff, int send_size)
+    {
+        std::lock_guard<std::mutex> guard(thread_mutex_);
+        auto f = asio_client_list_.find(client_id);
+        if (f != asio_client_list_.end())
+        {
+            auto client = f->second;
+            client->do_write_format_data(command_id, send_buff.c_str(), send_size);
             return true;
         }
         else

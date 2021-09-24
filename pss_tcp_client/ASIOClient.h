@@ -31,6 +31,8 @@ public:
 
     void do_read();
 
+    void do_write_format_data(short command_id, const char* data, size_t length);
+
     void do_write_immediately(const char* data, size_t length);
 
     void close_socket();

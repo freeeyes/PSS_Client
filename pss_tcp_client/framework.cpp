@@ -34,3 +34,8 @@ bool client_send_data(int client_id, const std::string& send_buff, int send_size
     return App_Client_Manager::instance()->client_send_data(client_id, send_buff, send_size);
 }
 
+DECLDIR bool client_send_format_data(int client_id, short command_id, const std::string& send_buff, int send_size)
+{
+    return App_Client_Manager::instance()->client_send_format_data(client_id, command_id, send_buff, send_size);
+}
+
