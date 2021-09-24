@@ -1,5 +1,8 @@
 #pragma once
 
+//tcp客户端
+//add by freeeyes
+
 #include <cstdlib>
 #include <cstring>
 #include <functional>
@@ -8,34 +11,28 @@
 #include <asio.hpp>
 #include "pss_common.h"
 #include "tms.hpp"
+#include "IOClient.h"
 
 using namespace std::chrono;
 using asio::ip::tcp;
 using std::placeholders::_1;
 
-//默认的命令id
-const short connect_command_id = 0x0001;
-const short disconnect_command_id = 0x0002;
-const short time_check_command_id = 0x0003;
-
-const int recv_buffer_max_size_ = 10240;
-
-class CASIOClient : public std::enable_shared_from_this<CASIOClient>
+class CASIOClient : public std::enable_shared_from_this<CASIOClient>, public IIOClient
 {
 public:
     explicit CASIOClient(asio::io_context* io_context, std::shared_ptr<ipacket_format> packet_format, std::shared_ptr<ipacket_dispose> packet_dispose);
 
     int get_tms_logic_id();
 
-    bool start(int connect_id, const std::string& server_ip, short server_port);
+    bool start(int connect_id, const std::string& server_ip, short server_port) final;
 
     void do_read();
 
-    void do_write_format_data(short command_id, const char* data, size_t length);
+    void do_write_format_data(short command_id, const char* data, size_t length) final;
 
-    void do_write_immediately(const char* data, size_t length);
+    void do_write_immediately(const char* data, size_t length) final;
 
-    void close_socket();
+    void close_socket() final;
 
     bool get_connect_state();
 
@@ -43,11 +40,11 @@ public:
 
     void set_write_time();
 
-    int get_time_pass_seconds();
+    int get_time_pass_seconds() final;
 
-    void do_check_timeout(int seconds);
+    void do_check_timeout(int seconds) final;
 
-    void reconnect();
+    void reconnect() final;
 
 private:
     tcp::socket socket_;

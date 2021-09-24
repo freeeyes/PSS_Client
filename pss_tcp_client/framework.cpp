@@ -14,9 +14,18 @@ void unload_module()
     App_Client_Manager::instance()->close();
 }
 
-int start_client(const std::string& server_ip, short server_port, std::shared_ptr<ipacket_format> packet_format, std::shared_ptr<ipacket_dispose> packet_dispose)
+int start_client(const std::string& server_ip, short server_port, std::shared_ptr<ipacket_format> packet_format, std::shared_ptr<ipacket_dispose> packet_dispose, em_io_type io_type)
 {
-    return App_Client_Manager::instance()->start_client(server_ip, server_port, packet_format, packet_dispose);
+    if (em_io_type::IO_TYPE_TCP == io_type)
+    {
+        //tcpÁ´½Ó
+        return App_Client_Manager::instance()->start_client_tcp(server_ip, server_port, packet_format, packet_dispose);
+    }
+    else if (em_io_type::IO_TYPE_UDP == io_type)
+    {
+        //udpÁ´½Ó
+        return App_Client_Manager::instance()->start_client_udp(server_ip, server_port, packet_format, packet_dispose);
+    }
 }
 
 DECLDIR bool reconnect_server(int client_id)

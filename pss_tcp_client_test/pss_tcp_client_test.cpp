@@ -16,10 +16,11 @@ void Test_Tcp_Connect()
 {
     std::string client_ip = "127.0.0.1";
     short client_port = 10002;
+    auto io_type = em_io_type::IO_TYPE_TCP;
     auto packet_format = std::make_shared<cpacket_format>();
     auto packet_dispose = std::make_shared<cpacket_dispose>();
 
-    int client_id = start_client(client_ip, client_port, packet_format, packet_dispose);
+    int client_id = start_client(client_ip, client_port, packet_format, packet_dispose, io_type);
 
     //close_client(client_id);
 

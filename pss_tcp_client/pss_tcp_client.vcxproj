@@ -154,8 +154,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="ASIOClient.h" />
+    <ClInclude Include="ASIOUDPClient.h" />
     <ClInclude Include="client_manager.h" />
     <ClInclude Include="framework.h" />
+    <ClInclude Include="IOClient.h" />
     <ClInclude Include="pss_common.h" />
     <ClInclude Include="singleton.h" />
     <ClInclude Include="ThreadQueue.h" />
@@ -165,6 +167,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ASIOClient.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="ASIOUDPClient.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="dllmain.cpp">

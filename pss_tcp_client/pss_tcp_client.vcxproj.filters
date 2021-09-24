@@ -42,15 +42,24 @@
     <ClInclude Include="ThreadQueue.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="IOClient.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ASIOUDPClient.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="ASIOClient.cpp">
-      <Filter>头文件</Filter>
-    </ClCompile>
     <ClCompile Include="framework.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="ASIOUDPClient.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="ASIOClient.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

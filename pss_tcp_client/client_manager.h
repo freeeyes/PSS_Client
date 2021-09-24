@@ -3,16 +3,8 @@
 #include "singleton.h"
 #include "pss_common.h"
 #include "ASIOClient.h"
+#include "ASIOUDPClient.h"
 #include <vector>
-
-class CIO_Context_info
-{
-public:
-    CIO_Context_info() = default;
-
-    asio::io_context* io_context_ = nullptr;
-    bool thread_is_run_ = false;
-};
 
 class CClient_Manager
 {
@@ -50,7 +42,7 @@ public:
             });
     }
 
-    int start_client(const std::string& server_ip, short server_port, std::shared_ptr<ipacket_format> packet_format, std::shared_ptr<ipacket_dispose> packet_dispose)
+    int start_client_tcp(const std::string& server_ip, short server_port, std::shared_ptr<ipacket_format> packet_format, std::shared_ptr<ipacket_dispose> packet_dispose)
     {
         std::lock_guard<std::mutex> guard(thread_mutex_);
 
@@ -60,6 +52,24 @@ public:
 
         //丢到消息线程里去做
         asio_client_list_[client_id] = std::make_shared<CASIOClient>(&io_context_,
+            packet_format,
+            packet_dispose);
+
+        asio_client_list_[client_id]->start(client_id, server_ip, server_port);
+
+        return client_id;
+    }
+
+    int start_client_udp(const std::string& server_ip, short server_port, std::shared_ptr<ipacket_format> packet_format, std::shared_ptr<ipacket_dispose> packet_dispose)
+    {
+        std::lock_guard<std::mutex> guard(thread_mutex_);
+
+        //这里获得当前的ID，需要加锁
+        int client_id = curr_client_id_;
+        curr_client_id_++;
+
+        //丢到消息线程里去做
+        asio_client_list_[client_id] = std::make_shared<CASIOUDPClient>(&io_context_,
             packet_format,
             packet_dispose);
 
@@ -219,7 +229,7 @@ public:
     }
 
 private:
-    map<int, std::shared_ptr<CASIOClient>> asio_client_list_;
+    map<int, std::shared_ptr<IIOClient>> asio_client_list_;
     int io_context_list_count_ = 0;
     std::thread tt_context_;
     int curr_client_id_ = 1;
