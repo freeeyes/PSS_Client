@@ -76,7 +76,7 @@ recv_packet_list cpacket_format::format_recv_buffer(int connect_id, const char* 
     return recv_packet_list_info;
 }
 
-std::string cpacket_format::format_send_buffer(int connect_id, short command_id, std::string recv_buffer, size_t buffer_length)
+std::string cpacket_format::format_send_buffer(int connect_id, short command_id, std::string recv_buffer, size_t buffer_length, size_t& format_length)
 {
     std::string client_send_packet;
     if (buffer_length + PACKET_HEAD_SIZE > MAX_PACKET_SEND_SIZE)
@@ -101,5 +101,6 @@ std::string cpacket_format::format_send_buffer(int connect_id, short command_id,
     nPos += buffer_length;
 
     client_send_packet.append(send_buffer_, nPos);
+    format_length = nPos;
     return client_send_packet;
 }

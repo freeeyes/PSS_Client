@@ -9,7 +9,14 @@ CASIOUDPClient::CASIOUDPClient(asio::io_context* io_context, std::shared_ptr<ipa
 int CASIOUDPClient::get_tms_logic_id()
 {
     int logic_thread_count = App_tms::instance()->Get_Logic_Count();
-    return connect_id_ % logic_thread_count;
+    if (0 == logic_thread_count)
+    {
+        return 0;
+    }
+    else
+    {
+        return connect_id_ % logic_thread_count;
+    }
 }
 
 bool CASIOUDPClient::start(int connect_id, const std::string& server_ip, short server_port)
@@ -84,8 +91,9 @@ void CASIOUDPClient::do_read()
 
 void CASIOUDPClient::do_write_format_data(short command_id, const char* data, size_t length)
 {
-    std::string send_packet = packet_format_->format_send_buffer(connect_id_, command_id, data, length);
-    do_write_immediately(send_packet.c_str(), send_packet.size());
+    size_t format_length = 0;
+    std::string send_packet = packet_format_->format_send_buffer(connect_id_, command_id, data, length, format_length);
+    do_write_immediately(send_packet.c_str(), format_length);
 }
 
 void CASIOUDPClient::do_write_immediately(const char* data, size_t length)

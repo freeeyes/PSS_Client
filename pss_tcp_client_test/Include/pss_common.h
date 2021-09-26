@@ -24,7 +24,7 @@ class ipacket_format
 {
 public:
     virtual recv_packet_list format_recv_buffer(int connect_id, const char* recv_buffer, size_t buffer_length) = 0;
-    virtual std::string format_send_buffer(int connect_id, short command_id, std::string recv_buffer, size_t buffer_length) = 0;
+    virtual std::string format_send_buffer(int connect_id, short command_id, std::string recv_buffer, size_t buffer_length, size_t& format_length) = 0;
 };
 
 //数据处理类(需要上层逻辑提供实现类)
