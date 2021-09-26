@@ -118,7 +118,7 @@ void CASIOTTYClient::do_write_immediately(const char* data, size_t length)
 
     int connect_id = connect_id_;
     auto packet_dispose = packet_dispose_;
-    serial_port_param_->async_write_some(asio::buffer(data, length),
+    serial_port_param_->async_write_some(asio::buffer(send_buffer, length),
         [self, send_buffer, connect_id, packet_dispose](std::error_code ec, std::size_t send_length)
         {
             if (ec)
