@@ -57,5 +57,6 @@ private:
     std::shared_ptr<ipacket_dispose> packet_dispose_;
     std::string server_ip_;
     short server_port_;
+    std::mutex thread_mutex_;
 };
 

@@ -89,6 +89,20 @@ void CASIOClient::do_read()
 
 void CASIOClient::do_write_format_data(short command_id, const char* data, size_t length)
 {
+    if (false == is_connect_)
+    {
+        auto packet_dispose = packet_dispose_;
+        auto connect_id = connect_id_;
+        auto recv_error = "socket is close,write error.";
+        App_tms::instance()->AddMessage(get_tms_logic_id(), [connect_id, packet_dispose, recv_error]() {
+            crecv_packet recv_packet;
+            recv_packet.command_id_ = disconnect_command_id;
+            recv_packet.packet_body_ = recv_error;
+            packet_dispose->do_message(connect_id, recv_packet);
+            });
+        return;
+    }
+
     size_t format_length = 0;
     std::string send_packet = packet_format_->format_send_buffer(connect_id_, command_id, data, length, format_length);
     do_write_immediately(send_packet.c_str(), format_length);
