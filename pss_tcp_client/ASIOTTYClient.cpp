@@ -116,7 +116,7 @@ void CASIOTTYClient::do_write_format_data(short command_id, const char* data, si
     {
         auto packet_dispose = packet_dispose_;
         auto connect_id = connect_id_;
-        auto recv_error = "socket is close,write error.";
+        std::string recv_error = "socket is close,write error.";
         App_tms::instance()->AddMessage(get_tms_logic_id(), [connect_id, packet_dispose, recv_error]() {
             crecv_packet recv_packet;
             recv_packet.command_id_ = disconnect_command_id;

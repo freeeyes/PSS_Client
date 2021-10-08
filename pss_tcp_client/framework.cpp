@@ -37,7 +37,7 @@ int start_client(const std::string& server_ip, short server_port, std::shared_pt
     }
 }
 
-DECLDIR bool reconnect_server(int client_id)
+bool reconnect_server(int client_id)
 {
     return App_Client_Manager::instance()->reconnect_server(client_id);
 }
@@ -45,6 +45,17 @@ DECLDIR bool reconnect_server(int client_id)
 void close_client(int client_id)
 {
     App_Client_Manager::instance()->close_client(client_id);
+}
+
+bool add_timer(int work_thread_id, task_function func)
+{
+    return App_tms::instance()->AddMessage(work_thread_id, func);
+}
+
+DECLDIR bool add_timer_loop(int work_thread_id, std::chrono::milliseconds millisecond, task_function func)
+{
+    App_tms::instance()->AddMessage(work_thread_id, millisecond, func);
+    return true;
 }
 
 bool client_send_data(int client_id, const std::string& send_buff, int send_size)
