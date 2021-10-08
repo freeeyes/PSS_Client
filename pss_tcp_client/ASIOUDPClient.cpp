@@ -22,7 +22,7 @@ int CASIOUDPClient::get_tms_logic_id()
 bool CASIOUDPClient::start(int connect_id, const std::string& server_ip, short server_port)
 {
     //建立连接
-    std::cout << "[CASIOUDPClient::start]connect(" << connect_id << ")" << std::endl;
+    //std::cout << "[CASIOUDPClient::start]connect(" << connect_id << ")" << std::endl;
     connect_id_ = connect_id;
     server_ip_ = server_ip;
     server_port_ = server_port;
@@ -133,7 +133,7 @@ void CASIOUDPClient::do_write_immediately(const char* data, size_t length)
 
 void CASIOUDPClient::close_socket()
 {
-    std::cout << "[CASIOUDPClient::close_socket]connect_id=" << connect_id_ << std::endl;
+    //std::cout << "[CASIOUDPClient::close_socket]connect_id=" << connect_id_ << std::endl;
     is_connect_ = false;
     socket_.close();
 }
@@ -217,7 +217,7 @@ void CASIOUDPClient::reconnect()
     if (false == is_connect_)
     {
         //重连
-        std::cout << "[CASIOClient::reconnect]connect(" << connect_id_ << ")" << std::endl;
+        //std::cout << "[CASIOClient::reconnect]connect(" << connect_id_ << ")" << std::endl;
         udp::endpoint end_point(asio::ip::address::from_string(server_ip_.c_str()), server_port_);
         asio::error_code connect_error;
 

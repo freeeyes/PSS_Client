@@ -168,7 +168,7 @@ void CASIOTTYClient::do_write_immediately(const char* data, size_t length)
 
 void CASIOTTYClient::close_socket()
 {
-    std::cout << "[CASIOUDPClient::close_socket]connect_id=" << connect_id_ << std::endl;
+    //std::cout << "[CASIOUDPClient::close_socket]connect_id=" << connect_id_ << std::endl;
     is_connect_ = false;
     serial_port_param_->close();
 }

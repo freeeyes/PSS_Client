@@ -21,7 +21,7 @@ int CASIOClient::get_tms_logic_id()
 bool CASIOClient::start(int connect_id, const std::string& server_ip, short server_port)
 {
     //建立连接
-    std::cout << "[CASIOClient::start]connect(" << connect_id << ")" << std::endl;
+    //std::cout << "[CASIOClient::start]connect(" << connect_id << ")" << std::endl;
     connect_id_ = connect_id;
     server_ip_ = server_ip;
     server_port_ = server_port;
@@ -145,7 +145,7 @@ void CASIOClient::do_write_immediately(const char* data, size_t length)
 
 void CASIOClient::close_socket()
 {
-    std::cout << "[CASIOClient::close_socket]connect_id=" << connect_id_ << std::endl;
+    //std::cout << "[CASIOClient::close_socket]connect_id=" << connect_id_ << std::endl;
     is_connect_ = false;
     socket_.close();
 }
@@ -229,7 +229,7 @@ void CASIOClient::reconnect()
     if (false == is_connect_)
     {
         //重连
-        std::cout << "[CASIOClient::reconnect]connect(" << connect_id_ << ")" << std::endl;
+        //std::cout << "[CASIOClient::reconnect]connect(" << connect_id_ << ")" << std::endl;
         tcp::endpoint end_point(asio::ip::address::from_string(server_ip_.c_str()), server_port_);
         asio::error_code connect_error;
 
@@ -244,7 +244,7 @@ void CASIOClient::reconnect()
     else
     {
         //链接已存在，不需要重连
-        std::cout << "[CASIOClient::reconnect]connect(" << connect_id_ << ") is exist" << std::endl;
+        //std::cout << "[CASIOClient::reconnect]connect(" << connect_id_ << ") is exist" << std::endl;
     }
 }
 

@@ -29,7 +29,7 @@ public:
 
         App_tms::instance()->AddMessage(0, [this]() {
             //定时器检查所有的客户端是否到期
-            std::cout << "[CClient_Manager::timer_check]begin" << std::endl;
+            //std::cout << "[CClient_Manager::timer_check]begin" << std::endl;
             for (const auto& io_session : asio_client_list_)
             {
                 int time_pass_seconds = io_session.second->get_time_pass_seconds();
@@ -39,7 +39,7 @@ public:
                     io_session.second->do_check_timeout(time_pass_seconds);
                 }
             }
-            std::cout << "[CClient_Manager::timer_check]end" << std::endl;
+            //std::cout << "[CClient_Manager::timer_check]end" << std::endl;
             });
     }
 
@@ -156,7 +156,7 @@ public:
         }
         else
         {
-            std::cout << "[reconnect_server]no find connect_id(" << client_id << ")." << std::endl;
+            //std::cout << "[reconnect_server]no find connect_id(" << client_id << ")." << std::endl;
             return false;
         }
     }
@@ -227,13 +227,13 @@ public:
                         = asio::make_work_guard(io_context_);
                     try
                     {
-                        std::cout << "[CClient_Manager::run](io_context) is run." << std::endl;
+                        //std::cout << "[CClient_Manager::run](io_context) is run." << std::endl;
                         thread_is_run_ = true;
                         while (true)
                         {
                             io_context_.run();
                         }
-                        std::cout << "[CClient_Manager::run](io_context) is over." << std::endl;
+                        //std::cout << "[CClient_Manager::run](io_context) is over." << std::endl;
                     }
                     catch (asio::error_code ec)
                     {
