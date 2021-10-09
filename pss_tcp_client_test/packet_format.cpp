@@ -12,7 +12,7 @@ recv_packet_list cpacket_format::format_recv_buffer(int connect_id, const char* 
     }
 
     //组合收到的数据流
-    std::memcpy(&recv_buffer_[curr_buffer_size_], recv_buffer, buffer_length);
+    recv_buffer_.writeBuff(recv_buffer, buffer_length);
     curr_buffer_size_ += buffer_length;
 
     //开始循环分析数据包
@@ -28,8 +28,9 @@ recv_packet_list cpacket_format::format_recv_buffer(int connect_id, const char* 
             //包头完整，判断包体是否完整
             int packet_body_size = 0;
             int command_id = 0;
-            std::memcpy(&command_id, &recv_buffer_[2], (short)sizeof(short));
-            std::memcpy(&packet_body_size, &recv_buffer_[4], (int)sizeof(int));
+            char* buffer_head = recv_buffer_.peek();
+            std::memcpy(&command_id, &buffer_head[2], (short)sizeof(short));
+            std::memcpy(&packet_body_size, &buffer_head[4], (int)sizeof(int));
             
             if (MAX_PACKET_BUFFER_SIZE <= packet_body_size)
             {
@@ -38,6 +39,7 @@ recv_packet_list cpacket_format::format_recv_buffer(int connect_id, const char* 
 
                 //将数据缓冲内容清空
                 curr_buffer_size_ = 0;
+                recv_buffer_.consumerClear();
 
                 return recv_packet_list_info;
             }
@@ -51,12 +53,12 @@ recv_packet_list cpacket_format::format_recv_buffer(int connect_id, const char* 
                     
                     crecv_packet recv_packet;
                     recv_packet.command_id_ = command_id;
-                    recv_packet.packet_body_.append(&recv_buffer_[PACKET_HEAD_SIZE], packet_body_size);
+                    recv_packet.packet_body_.append(&buffer_head[PACKET_HEAD_SIZE], packet_body_size);
                     recv_packet.packet_size_ = packet_body_size;
                     recv_packet_list_info.emplace_back(recv_packet);
 
                     //移动数据
-                    std::memmove(&recv_buffer_[0], &recv_buffer_[curr_packet_size], curr_buffer_size_ - curr_packet_size);
+                    recv_buffer_.remove(curr_packet_size);
                     curr_buffer_size_ -= curr_packet_size;
                     if (curr_buffer_size_ == 0)
                     {
