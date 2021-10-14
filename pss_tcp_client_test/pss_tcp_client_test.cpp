@@ -44,6 +44,11 @@ int main()
 {
     load_module(1, 5);
 
+    //测试定时器
+    add_timer_loop(3, std::chrono::seconds(1), std::chrono::seconds(1), []() {
+        std::cout << "time is run" << std::endl;
+        });
+
 #if PSS_PLATFORM == PLATFORM_WIN
     SetConsoleCtrlHandler(CtrlHandler, TRUE);
 #endif

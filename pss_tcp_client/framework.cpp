@@ -47,15 +47,30 @@ void close_client(int client_id)
     App_Client_Manager::instance()->close_client(client_id);
 }
 
-bool add_timer(int work_thread_id, task_function func)
+bool add_timer(int work_thread_id, std::chrono::milliseconds time_interval_milliseconds, task_function func)
 {
-    return App_tms::instance()->AddMessage(work_thread_id, func);
+    if (time_interval_milliseconds == chrono::milliseconds(0))
+    {
+        //立即执行
+        return App_tms::instance()->AddMessage(work_thread_id, func);
+    }
+    else
+    {
+        return App_tms::instance()->AddMessage(work_thread_id, time_interval_milliseconds, func);
+    }
 }
 
-DECLDIR bool add_timer_loop(int work_thread_id, std::chrono::milliseconds millisecond, task_function func)
+bool add_timer_loop(int work_thread_id, std::chrono::seconds begin_delay_seconds, std::chrono::milliseconds time_interval_milliseconds, task_function func)
 {
-    App_tms::instance()->AddMessage(work_thread_id, millisecond, func);
-    return true;
+    if (time_interval_milliseconds == chrono::milliseconds(0))
+    {
+        //不允许时间间隔为0
+        return false;
+    }
+    else
+    {
+        return App_tms::instance()->AddMessage_loop(work_thread_id, begin_delay_seconds, time_interval_milliseconds, func);
+    }
 }
 
 bool client_send_data(int client_id, const std::string& send_buff, int send_size)

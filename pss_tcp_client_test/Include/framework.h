@@ -32,7 +32,7 @@ DECLDIR bool reconnect_server(int client_id);
 DECLDIR bool client_send_data(int client_id, const std::string& send_buff, int send_size);
 DECLDIR bool client_send_format_data(int client_id, short command_id, const std::string& send_buff, int send_size);
 DECLDIR void close_client(int client_id);
-DECLDIR bool add_timer(int work_thread_id, task_function func);
-DECLDIR bool add_timer_loop(int work_thread_id, std::chrono::milliseconds millisecond, task_function func);
+DECLDIR bool add_timer(int work_thread_id, std::chrono::milliseconds time_interval_milliseconds, task_function func);
+DECLDIR bool add_timer_loop(int work_thread_id, std::chrono::seconds begin_delay_milliseconds, std::chrono::milliseconds time_interval_milliseconds, task_function func);
 
 

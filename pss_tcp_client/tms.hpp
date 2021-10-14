@@ -199,7 +199,7 @@ public:
     };
 
     //添加消息(延时)
-    brynet::Timer::WeakPtr AddMessage(uint32 u4LogicID, std::chrono::milliseconds millisecond, task_function func)
+    bool AddMessage(uint32 u4LogicID, std::chrono::milliseconds millisecond, task_function func)
     {
         brynet::Timer::WeakPtr timer;
         auto f = m_mapLogicList.find(u4LogicID);
@@ -216,11 +216,18 @@ public:
             //cout << "Timer add is ok." << endl;
         }
 
-        return timer;
+        if (!timer.expired())
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 
     //添加消息(定时器)
-    brynet::Timer::WeakPtr AddMessage_loop(uint32 u4LogicID, std::chrono::seconds delayseconds, std::chrono::milliseconds millisecond, task_function func)
+    bool AddMessage_loop(uint32 u4LogicID, std::chrono::seconds delayseconds, std::chrono::milliseconds millisecond, task_function func)
     {
         brynet::Timer::WeakPtr timer;
         auto f = m_mapLogicList.find(u4LogicID);
@@ -237,7 +244,14 @@ public:
             //cout << "Timer add is ok." << endl;
         }
 
-        return timer;
+        if (!timer.expired())
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 
     //关闭系统
