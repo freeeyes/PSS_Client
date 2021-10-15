@@ -199,8 +199,9 @@ public:
     };
 
     //添加消息(延时)
-    bool AddMessage(uint32 u4LogicID, std::chrono::milliseconds millisecond, task_function func)
+    int AddMessage(uint32 u4LogicID, std::chrono::milliseconds millisecond, task_function func)
     {
+        int timer_index = -1;
         brynet::Timer::WeakPtr timer;
         auto f = m_mapLogicList.find(u4LogicID);
         if (f != m_mapLogicList.end())
@@ -208,27 +209,31 @@ public:
             auto pLogicMessage = std::make_shared<CLogicMessage>();
             pLogicMessage->m_func = func;
 
-            timer = m_timerManager.addTimer(millisecond, [this, u4LogicID, pLogicMessage]() {
+            m_ttmutex.lock();
+            timer_index = m_nTimerIndex++;
+            m_ttmutex.unlock();
+
+            timer = m_timerManager.addTimer(millisecond, [this, timer_index, u4LogicID, pLogicMessage]() {
                 m_mapLogicList[u4LogicID]->Put(pLogicMessage);
-                //cout << "Timer execute is ok." << endl;
+
+                m_ttmutex.lock();
+                m_mapTimeridList.erase(timer_index);
+                m_ttmutex.unlock();
                 });
 
-            //cout << "Timer add is ok." << endl;
+            //添加索引
+            m_ttmutex.lock();
+            m_mapTimeridList[timer_index] = timer;
+            m_ttmutex.unlock();
         }
 
-        if (!timer.expired())
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
+        return timer_index;
     }
 
     //添加消息(定时器)
-    bool AddMessage_loop(uint32 u4LogicID, std::chrono::seconds delayseconds, std::chrono::milliseconds millisecond, task_function func)
+    int AddMessage_loop(uint32 u4LogicID, std::chrono::seconds delayseconds, std::chrono::milliseconds millisecond, task_function func)
     {
+        int timer_index = -1;
         brynet::Timer::WeakPtr timer;
         auto f = m_mapLogicList.find(u4LogicID);
         if (f != m_mapLogicList.end())
@@ -236,16 +241,52 @@ public:
             auto pLogicMessage = std::make_shared<CLogicMessage>();
             pLogicMessage->m_func = func;
 
-            timer = m_timerManager.addTimer_loop(delayseconds, millisecond, [this, u4LogicID, pLogicMessage]() {
+            m_ttmutex.lock();
+            timer_index = m_nTimerIndex++;
+            m_ttmutex.unlock();
+
+            timer = m_timerManager.addTimer_loop(delayseconds, millisecond, [this, timer_index, u4LogicID, pLogicMessage]() {
                 m_mapLogicList[u4LogicID]->Put(pLogicMessage);
+                //释放索引
+                m_ttmutex.lock();
+                m_mapTimeridList.erase(timer_index);
+                m_ttmutex.unlock();
                 //cout << "Timer execute is ok." << endl;
                 });
+
+            //添加索引
+            m_ttmutex.lock();
+            m_mapTimeridList[timer_index] = timer;
+            m_ttmutex.unlock();
 
             //cout << "Timer add is ok." << endl;
         }
 
-        if (!timer.expired())
+        return timer_index;
+    }
+
+    //关闭定时
+    bool Close_Timer(int timer_id)
+    {
+        std::lock_guard<std::mutex> guard(m_ttmutex);
+
+        auto f = m_mapTimeridList.find(timer_id);
+        if (f != m_mapTimeridList.end())
         {
+            //找到了，取消定时器
+            auto timer_ptr = f->second;
+            if (timer_ptr.expired())
+            {
+                //定时器有效，取消
+                auto timer_ptr_task = timer_ptr.lock();
+                if (nullptr != timer_ptr_task)
+                {
+                    timer_ptr_task->cancel();
+                }
+                //释放索引
+                m_mapTimeridList.erase(timer_id);
+            }
+
             return true;
         }
         else
@@ -253,6 +294,7 @@ public:
             return false;
         }
     }
+
 
     //关闭系统
     void Close()
@@ -274,11 +316,15 @@ public:
 private:
     using mapthreads = map<uint32, std::shared_ptr<CLogicTasK>>;
     using mapthreadidtologicid = map<std::string, uint32>;
+    using maptimerid = map<int, brynet::Timer::WeakPtr>;    //记录timerid和brynet::Timer::WeakPtr的映射关系
     brynet::TimerMgr m_timerManager;
     mapthreads m_mapLogicList;
     std::thread m_ttTimer;
+    std::mutex m_ttmutex;
     mapthreadidtologicid m_TidtologicidList;
+    maptimerid m_mapTimeridList;
     int m_nLogicThreadCount = 0;
+    int m_nTimerIndex = 0;
 };
 
 using App_tms = PSS_singleton<TMS>;

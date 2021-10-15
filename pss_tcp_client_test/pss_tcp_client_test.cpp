@@ -45,7 +45,7 @@ int main()
     load_module(1, 5);
 
     //测试定时器
-    add_timer_loop(3, std::chrono::seconds(1), std::chrono::seconds(1), []() {
+    add_timer_loop(0, std::chrono::seconds(1), std::chrono::seconds(1), []() {
         std::cout << "time is run" << std::endl;
         });
 

@@ -47,7 +47,7 @@ void close_client(int client_id)
     App_Client_Manager::instance()->close_client(client_id);
 }
 
-bool add_timer(int work_thread_id, std::chrono::milliseconds time_interval_milliseconds, task_function func)
+int add_timer(int work_thread_id, std::chrono::milliseconds time_interval_milliseconds, task_function func)
 {
     if (time_interval_milliseconds == chrono::milliseconds(0))
     {
@@ -60,7 +60,7 @@ bool add_timer(int work_thread_id, std::chrono::milliseconds time_interval_milli
     }
 }
 
-bool add_timer_loop(int work_thread_id, std::chrono::seconds begin_delay_seconds, std::chrono::milliseconds time_interval_milliseconds, task_function func)
+int add_timer_loop(int work_thread_id, std::chrono::seconds begin_delay_seconds, std::chrono::milliseconds time_interval_milliseconds, task_function func)
 {
     if (time_interval_milliseconds == chrono::milliseconds(0))
     {
@@ -73,12 +73,17 @@ bool add_timer_loop(int work_thread_id, std::chrono::seconds begin_delay_seconds
     }
 }
 
+bool close_timer_id(int timer_id)
+{
+    return  App_tms::instance()->Close_Timer(timer_id);
+}
+
 bool client_send_data(int client_id, const std::string& send_buff, int send_size)
 {
     return App_Client_Manager::instance()->client_send_data(client_id, send_buff, send_size);
 }
 
-DECLDIR bool client_send_format_data(int client_id, short command_id, const std::string& send_buff, int send_size)
+bool client_send_format_data(int client_id, short command_id, const std::string& send_buff, int send_size)
 {
     return App_Client_Manager::instance()->client_send_format_data(client_id, command_id, send_buff, send_size);
 }
