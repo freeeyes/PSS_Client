@@ -247,10 +247,6 @@ public:
 
             timer = m_timerManager.addTimer_loop(delayseconds, millisecond, [this, timer_index, u4LogicID, pLogicMessage]() {
                 m_mapLogicList[u4LogicID]->Put(pLogicMessage);
-                //释放索引
-                m_ttmutex.lock();
-                m_mapTimeridList.erase(timer_index);
-                m_ttmutex.unlock();
                 //cout << "Timer execute is ok." << endl;
                 });
 
