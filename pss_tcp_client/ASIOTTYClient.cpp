@@ -64,43 +64,42 @@ bool CASIOTTYClient::start(int connect_id, const std::string& tty_name, short tt
 
 void CASIOTTYClient::do_read()
 {
+    auto self(shared_from_this());
     serial_port_param_->async_read_some(asio::buffer(recv_buffer, recv_buffer_max_size_),
-        [this](std::error_code ec, std::size_t length)
+        [self](std::error_code ec, std::size_t length)
         {
             if (!ec)
             {
                 //处理数据(接收消息)
-                auto recv_packet_list_info = packet_format_->format_recv_buffer(connect_id_, recv_buffer, length);
+                auto recv_packet_list_info = self->packet_format_->format_recv_buffer(self->connect_id_, self->recv_buffer, length);
 
-                auto logic_thread_id = get_tms_logic_id();
+                auto logic_thread_id = self->get_tms_logic_id();
 
                 for (auto recv_packet : recv_packet_list_info)
                 {
-                    App_tms::instance()->AddMessage(logic_thread_id, [this, recv_packet]() {
-                        packet_dispose_->do_message(connect_id_, recv_packet);
+                    App_tms::instance()->AddMessage(logic_thread_id, [self, recv_packet]() {
+                        self->packet_dispose_->do_message(self->connect_id_, recv_packet);
                         });
                 }
 
-                recv_last_timer_ = system_clock::now();
+                self->recv_last_timer_ = system_clock::now();
                 //继续读
-                do_read();
+                self->do_read();
             }
             else
             {
-                auto self(shared_from_this());
-
                 //链接断开
                 //std::cout << "[CASIOUDPClient::do_read]error=" << ec.message() << std::endl;
-                auto packet_dispose = packet_dispose_;
-                auto connect_id = connect_id_;
+                auto packet_dispose = self->packet_dispose_;
+                auto connect_id = self->connect_id_;
                 auto recv_error = ec.message();
-                App_tms::instance()->AddMessage(get_tms_logic_id(), [connect_id, packet_dispose, recv_error]() {
+                App_tms::instance()->AddMessage(self->get_tms_logic_id(), [connect_id, packet_dispose, recv_error]() {
                     crecv_packet recv_packet;
                     recv_packet.command_id_ = disconnect_command_id;
                     recv_packet.packet_body_ = recv_error;
                     packet_dispose->do_message(connect_id, recv_packet);
                     });
-                close_socket();
+                self->close_socket();
                 //自动重连消息
                 App_tms::instance()->AddMessage(self->get_tms_logic_id(), [self]() {
                     //自动重连
