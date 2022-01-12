@@ -79,12 +79,16 @@ void CASIOUDPClient::do_read()
                     recv_packet.packet_body_ = recv_error;
                     packet_dispose->do_message(connect_id, recv_packet);
                     });
-                self->close_socket();
-                //自动重连消息
-                App_tms::instance()->AddMessage(self->get_tms_logic_id(), [self]() {
-                    //自动重连
-                    self->reconnect();
-                    });
+
+                if (self->is_client_close_ == false)
+                {
+                    self->close_socket();
+                    //自动重连消息
+                    App_tms::instance()->AddMessage(self->get_tms_logic_id(), [self]() {
+                        //自动重连
+                        self->reconnect();
+                        });
+                }
             }
         });
 }
@@ -118,12 +122,16 @@ void CASIOUDPClient::do_write_immediately(const char* data, size_t length)
                     recv_packet.packet_body_ = write_error;
                     packet_dispose->do_message(connect_id, recv_packet);
                     });
-                self->close_socket();
-                //自动重连消息
-                App_tms::instance()->AddMessage(self->get_tms_logic_id(), [self]() {
-                    //自动重连
-                    self->reconnect();
-                    });
+
+                if (self->is_client_close_ == false)
+                {
+                    self->close_socket();
+                    //自动重连消息
+                    App_tms::instance()->AddMessage(self->get_tms_logic_id(), [self]() {
+                        //自动重连
+                        self->reconnect();
+                        });
+                }
             }
 
             self->set_write_time();
@@ -136,6 +144,12 @@ void CASIOUDPClient::close_socket()
     //std::cout << "[CASIOUDPClient::close_socket]connect_id=" << connect_id_ << std::endl;
     is_connect_ = false;
     socket_.close();
+}
+
+void CASIOUDPClient::close_client_socket()
+{
+    is_client_close_ = true;
+    close_socket();
 }
 
 bool CASIOUDPClient::get_connect_state()

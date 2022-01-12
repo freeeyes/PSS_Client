@@ -30,7 +30,9 @@ public:
 
     void do_write_immediately(const char* data, size_t length) final;
 
-    void close_socket() final;
+    void close_socket();
+
+    void close_client_socket() final;
 
     bool get_connect_state();
 
@@ -52,6 +54,7 @@ private:
     system_clock::time_point write_last_timer_ = system_clock::now();
     char recv_buffer[recv_buffer_max_size_];
     int connect_id_ = 0;
+    bool is_client_close_ = false;
     bool is_connect_ = false;
     std::shared_ptr<ipacket_format> packet_format_;
     std::shared_ptr<ipacket_dispose> packet_dispose_;

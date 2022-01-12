@@ -19,7 +19,7 @@ public:
     virtual bool start(int connect_id, const std::string& server_ip, short server_port) = 0;
     virtual void do_write_format_data(short command_id, const char* data, size_t length) = 0;
     virtual void do_write_immediately(const char* data, size_t length) = 0;
-    virtual void close_socket() = 0;
+    virtual void close_client_socket() = 0;
     virtual void do_check_timeout(int seconds) = 0;
     virtual void reconnect() = 0;
     virtual int get_time_pass_seconds() = 0;

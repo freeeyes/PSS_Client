@@ -28,6 +28,7 @@ public:
         //考虑到使用锁的问题，在这里直接使用线程消息去处理
 
         App_tms::instance()->AddMessage(0, [this]() {
+            std::lock_guard<std::mutex> guard(thread_mutex_);
             //定时器检查所有的客户端是否到期
             //std::cout << "[CClient_Manager::timer_check]begin" << std::endl;
             for (const auto& io_session : asio_client_list_)
@@ -135,8 +136,8 @@ public:
         auto f = asio_client_list_.find(client_id);
         if (f != asio_client_list_.end())
         {
-            f->second->close_socket();
-            asio_client_list_.erase(client_id);
+            f->second->close_client_socket();
+            asio_client_list_.erase(f);
             return true;
         }
         else
@@ -170,7 +171,7 @@ public:
         {
             for (const auto& client : asio_client_list_)
             {
-                client.second->close_socket();
+                client.second->close_client_socket();
             }
 
             asio_client_list_.clear();

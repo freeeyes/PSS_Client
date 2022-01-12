@@ -20,18 +20,18 @@ void Test_Tcp_Connect()
     auto packet_format = std::make_shared<cpacket_format>();
     auto packet_dispose = std::make_shared<cpacket_dispose>();
 
-    //int client_id = start_client(client_ip, client_port, packet_format, packet_dispose, io_type);
-
-    //close_client(client_id);
+    int client_id = start_client(client_ip, client_port, packet_format, packet_dispose, io_type);
+    std::this_thread::sleep_for(std::chrono::seconds(3));
+    close_client(client_id);
 
     //测试定时器
-    int timer_id = add_timer_loop(0, std::chrono::seconds(1), std::chrono::seconds(1), []() {
-        std::cout << "time is run" << std::endl;
-        });
+    //int timer_id = add_timer_loop(0, std::chrono::seconds(1), std::chrono::seconds(1), []() {
+    //    std::cout << "time is run" << std::endl;
+    //    });
 
-    std::this_thread::sleep_for(std::chrono::seconds(5));
+    //std::this_thread::sleep_for(std::chrono::seconds(5));
 
-    close_timer_id(timer_id);
+    //close_timer_id(timer_id);
 }
 
 #if PSS_PLATFORM == PLATFORM_WIN

@@ -68,21 +68,24 @@ void CASIOClient::do_read()
             {
                 //链接断开
                 //std::cout << "[CASIOClient::do_read]error=" << ec.message() << std::endl;
-                auto packet_dispose = self->packet_dispose_;
                 auto connect_id = self->connect_id_;
                 auto recv_error = ec.message();
-                App_tms::instance()->AddMessage(self->get_tms_logic_id(), [connect_id, packet_dispose, recv_error]() {
+                App_tms::instance()->AddMessage(self->get_tms_logic_id(), [self, connect_id, recv_error]() {
                     crecv_packet recv_packet;
                     recv_packet.command_id_ = disconnect_command_id;
                     recv_packet.packet_body_ = recv_error;
-                    packet_dispose->do_message(connect_id, recv_packet);
+                    self->packet_dispose_->do_message(connect_id, recv_packet);
                     });
-                self->close_socket();
-                //自动重连消息
-                App_tms::instance()->AddMessage(self->get_tms_logic_id(), [self]() {
-                    //自动重连
-                    self->reconnect();
-                    });
+
+                if (self->is_client_close_ == false)
+                {
+                    self->close_socket();
+                    //自动重连消息
+                    App_tms::instance()->AddMessage(self->get_tms_logic_id(), [self]() {
+                        //自动重连
+                        self->reconnect();
+                        });
+                }
             }
         });
 }
@@ -130,12 +133,16 @@ void CASIOClient::do_write_immediately(const char* data, size_t length)
                     recv_packet.packet_body_ = write_error;
                     packet_dispose->do_message(connect_id, recv_packet);
                     });
-                self->close_socket();
-                //自动重连消息
-                App_tms::instance()->AddMessage(self->get_tms_logic_id(), [self]() {
-                    //自动重连
-                    self->reconnect();
-                    });
+
+                if (self->is_client_close_ == false)
+                {
+                    self->close_socket();
+                    //自动重连消息
+                    App_tms::instance()->AddMessage(self->get_tms_logic_id(), [self]() {
+                        //自动重连
+                        self->reconnect();
+                        });
+                }
             }
 
             self->set_write_time();
@@ -148,6 +155,12 @@ void CASIOClient::close_socket()
     //std::cout << "[CASIOClient::close_socket]connect_id=" << connect_id_ << std::endl;
     is_connect_ = false;
     socket_.close();
+}
+
+void CASIOClient::close_client_socket()
+{
+    is_client_close_ = true;
+    close_socket();
 }
 
 bool CASIOClient::get_connect_state()
