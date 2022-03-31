@@ -60,12 +60,17 @@ int add_timer(int work_thread_id, std::chrono::milliseconds time_interval_millis
     }
 }
 
+int add_local_message(int work_thread_id, task_function func)
+{
+    return App_tms::instance()->AddMessage(work_thread_id, func);
+}
+
 int add_timer_loop(int work_thread_id, std::chrono::seconds begin_delay_seconds, std::chrono::milliseconds time_interval_milliseconds, task_function func)
 {
     if (time_interval_milliseconds == chrono::milliseconds(0))
     {
         //不允许时间间隔为0
-        return false;
+        return -1;
     }
     else
     {
