@@ -21,8 +21,8 @@ void Test_Tcp_Connect()
     auto packet_dispose = std::make_shared<cpacket_dispose>();
 
     int client_id = start_client(client_ip, client_port, packet_format, packet_dispose, io_type);
-    std::this_thread::sleep_for(std::chrono::seconds(3));
-    close_client(client_id);
+    //std::this_thread::sleep_for(std::chrono::seconds(3));
+    //close_client(client_id);
 
     //测试定时器
     //int timer_id = add_timer_loop(0, std::chrono::seconds(1), std::chrono::seconds(1), []() {
@@ -47,6 +47,34 @@ BOOL WINAPI CtrlHandler(DWORD fdwCtrlType)
     return TRUE;
 }
 #endif
+
+//连接发送数据
+static void connSnd(int iConnSnd)
+{
+    std::string client_ip = "127.0.0.1";
+    short client_port = 10002;
+    auto io_type = em_io_type::IO_TYPE_TCP;
+    //建立连接
+    auto packet_format = std::make_shared<cpacket_format>();
+    auto packet_dispose = std::make_shared<cpacket_dispose>();
+    int client_id = start_client(client_ip, client_port, packet_format, packet_dispose, io_type);
+
+    /*
+    uint64_t iIndex = 0;
+    char cData[1024] = { 0 };
+    
+    while (true)
+    {
+        sprintf(cData, "iConnSnd=%d iIndex=%lld hllo word!", iConnSnd, ++iIndex);
+        string sSendData = cData;
+        if (!client_send_format_data(client_id, 0x1001, sSendData, sSendData.size()))
+        {
+            printf("[%s] %d  client_id[%d] command_id[%d] client_send_format_data[%s] faile.\n", __FUNCTION__, __LINE__, client_id, CMD_OTHER_ID, sSendData.c_str());
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));//std::chrono::seconds(3)
+    }
+    */
+}
 
 int main()
 {

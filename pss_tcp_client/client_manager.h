@@ -7,6 +7,14 @@
 #include "ASIOTTYClient.h"
 #include <vector>
 
+//记录客户端超时的数据结构
+class CClient_Timeout_Info
+{
+public:
+    std::shared_ptr<IIOClient> io_client_ = nullptr;
+    int timeout_soecnds = 0;
+};
+
 class CClient_Manager
 {
 public:
@@ -28,19 +36,27 @@ public:
         //考虑到使用锁的问题，在这里直接使用线程消息去处理
 
         App_tms::instance()->AddMessage(0, [this]() {
-            std::lock_guard<std::mutex> guard(thread_mutex_);
+            thread_mutex_.lock();
             //定时器检查所有的客户端是否到期
-            //std::cout << "[CClient_Manager::timer_check]begin" << std::endl;
+            vector<CClient_Timeout_Info> timeout_session_list;
             for (const auto& io_session : asio_client_list_)
             {
                 int time_pass_seconds = io_session.second->get_time_pass_seconds();
                 if (time_pass_seconds > timer_check_seconds_)
                 {
-                    //std::cout << "[CClient_Manager::timer_check]connect_id=" << io_session.first << " is timeout " << time_pass_seconds << "." << std::endl;
-                    io_session.second->do_check_timeout(time_pass_seconds);
+                    CClient_Timeout_Info timeout_info_;
+                    timeout_info_.io_client_ = io_session.second;
+                    timeout_info_.timeout_soecnds = time_pass_seconds;
+                    timeout_session_list.emplace_back(timeout_info_);
                 }
             }
-            //std::cout << "[CClient_Manager::timer_check]end" << std::endl;
+            thread_mutex_.unlock();
+
+            //调用超时事件
+            for (const auto& timeout_info_ : timeout_session_list)
+            {
+                timeout_info_.io_client_->do_check_timeout(timeout_info_.timeout_soecnds);
+            }
             });
     }
 
