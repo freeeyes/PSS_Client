@@ -106,3 +106,19 @@ bool cpacket_dispose::do_message(int connect_id, crecv_packet recv_packet)
     return true;
 }
 ```  
+
+how to use timer in message.  
+```c++
+    int timer_id = add_timer_loop(0, std::chrono::seconds(1), std::chrono::seconds(1), []() {
+        std::cout << "time is run" << std::endl;
+        });
+
+```  
+
+how to use local thread message queue.
+first param is thread queue ID.
+```c++
+    add_local_message(1, []() {
+        std::cout << "[local message] is done" << std::endl;
+        });
+```
