@@ -1,6 +1,10 @@
 ﻿#include <iostream>
 #include <chrono>
 #include <thread>
+#include <iomanip>
+#include <thread>
+#include <mutex>
+#include <condition_variable>
 #include "framework.h"
 #include "packet_format.h"
 #include "packet_dispose.h"
@@ -12,6 +16,9 @@
 //测试PSS TCP Client 客户端
 //add by freeeyes
 
+std::mutex m;
+std::condition_variable cv;
+
 void Test_Tcp_Connect()
 {
     std::string client_ip = "127.0.0.1";
@@ -22,15 +29,20 @@ void Test_Tcp_Connect()
 
     int client_id = start_client(client_ip, client_port, packet_format, packet_dispose, io_type);
     std::this_thread::sleep_for(std::chrono::seconds(1));
+    /*
     add_local_message(1, []() {
         std::cout << "[local message] is done" << std::endl;
         });
+     */
     //close_client(client_id);
 
     //测试定时器
-    //int timer_id = add_timer_loop(0, std::chrono::seconds(1), std::chrono::seconds(1), []() {
-    //    std::cout << "time is run" << std::endl;
-    //    });
+    int timer_id = add_timer_loop(0, std::chrono::seconds(0), std::chrono::seconds(5), [client_id]() {
+        std::time_t now = std::time(nullptr);
+        struct tm tm_now;
+        localtime_s(&tm_now, &now);
+        std::cout << "[" << std::put_time(&tm_now, "%Y-%m-%d %H.%M.%S") << "]" << "time is run" << std::endl;
+        });
 
     //std::this_thread::sleep_for(std::chrono::seconds(5));
 
@@ -44,6 +56,7 @@ BOOL WINAPI CtrlHandler(DWORD fdwCtrlType)
     {
     case CTRL_CLOSE_EVENT:
         unload_module();
+        cv.notify_one();
         return TRUE;
     }
 
@@ -61,7 +74,10 @@ int main()
 
     Test_Tcp_Connect();
 
-    getchar();
+    //getchar();
+    std::unique_lock<std::mutex> lk(m);
+    cv.wait(lk);
+    lk.unlock();
 
     return 0;
 }

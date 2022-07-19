@@ -271,7 +271,7 @@ public:
         {
             //找到了，取消定时器
             auto timer_ptr = f->second;
-            if (timer_ptr.expired())
+            if (!timer_ptr.expired())
             {
                 //定时器有效，取消
                 auto timer_ptr_task = timer_ptr.lock();
